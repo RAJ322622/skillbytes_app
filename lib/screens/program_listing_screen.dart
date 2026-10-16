@@ -1,18 +1,17 @@
-
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../widgets/app_shell.dart';
+import '../state/course_filter.dart';
 
 class ProgramListingScreen extends StatefulWidget {
-  const ProgramListingScreen({super.key});
+  final ValueChanged<int> onTabChange;
+  const ProgramListingScreen({super.key, required this.onTabChange});
 
   @override
-  State<ProgramListingScreen> createState() =>
-      _ProgramListingScreenState();
+  State<ProgramListingScreen> createState() => _ProgramListingScreenState();
 }
 
 class _ProgramListingScreenState extends State<ProgramListingScreen> {
-  final TextEditingController _searchController =
-      TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   String _search = '';
   String _category = 'All';
@@ -21,75 +20,69 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
   final List<Map<String, dynamic>> courses = [
     {
       'title': 'Flutter Development',
-      'description':
-          'Learn to build beautiful mobile apps with Flutter.',
+      'description': 'Learn to build beautiful mobile apps with Flutter.',
       'category': 'Programming',
       'level': 'Beginner',
       'rating': 4.8,
-      'learners': 00,
-      'hours': 0,
+      'learners': 12000,
+      'hours': 6,
       'icon': Icons.flutter_dash,
-      'color': Color(0xFFC9DEFF),
+      'color': const Color(0xFFC9DEFF),
     },
     {
       'title': 'Python Programming',
-      'description':
-          'Start coding with Python from basics to advanced.',
+      'description': 'Start coding with Python from basics to advanced.',
       'category': 'Programming',
       'level': 'Beginner',
       'rating': 4.7,
-      'learners': 000,
-      'hours': 0,
+      'learners': 15000,
+      'hours': 8,
       'icon': Icons.code,
-      'color': Color(0xFFFFE9BE),
+      'color': const Color(0xFFFFE9BE),
     },
     {
       'title': 'Networking Basics',
-      'description':
-          'Understand computer networks, IP, and protocols.',
+      'description': 'Understand computer networks, IP, and protocols.',
       'category': 'Networking',
       'level': 'Intermediate',
       'rating': 4.6,
-      'learners': 00,
-      'hours': 0,
+      'learners': 8500,
+      'hours': 5,
       'icon': Icons.router,
-      'color': Color(0xFFC9F8DD),
+      'color': const Color(0xFFC9F8DD),
     },
     {
       'title': 'Electronics Basics',
-      'description':
-          'Explore basic electronics components and circuits.',
+      'description': 'Explore basic electronics components and circuits.',
       'category': 'Electronics',
       'level': 'Beginner',
       'rating': 4.7,
-      'learners': 00,
-      'hours': 0,
+      'learners': 6200,
+      'hours': 4,
       'icon': Icons.memory,
-      'color': Color(0xFFEED5FF),
+      'color': const Color(0xFFEED5FF),
     },
     {
       'title': 'Hardware Skills',
-      'description':
-          'Learn about hardware tools, devices, and maintenance.',
+      'description': 'Learn about hardware tools, devices, and maintenance.',
       'category': 'Hardware Skills',
       'level': 'Intermediate',
       'rating': 4.5,
-      'learners': 00,
-      'hours': 00,
+      'learners': 4300,
+      'hours': 5,
       'icon': Icons.handyman,
-      'color': Color(0xFFC4F6F1),
+      'color': const Color(0xFFC4F6F1),
     },
     {
       'title': 'Web Development',
-      'description':
-          'Build modern web applications using HTML, CSS and JS.',
+      'description': 'Build modern web applications using HTML, CSS and JS.',
       'category': 'Programming',
       'level': 'Advanced',
-      'rating': 0,
-      'learners': 000,
-      'hours': 0,
+      'rating': 4.9,
+      'learners': 21000,
+      'hours': 10,
       'icon': Icons.laptop_mac,
-      'color': Color(0xFFFFD3E9),
+      'color': const Color(0xFFFFD3E9),
     },
   ];
 
@@ -125,8 +118,7 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
 
     if (_sort == 'Rating') {
       result.sort(
-        (a, b) => (b['rating'] as double)
-            .compareTo(a['rating'] as double),
+        (a, b) => _num(b['rating']).compareTo(_num(a['rating'])),
       );
     } else if (_sort == 'Name') {
       result.sort(
@@ -135,225 +127,117 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
       );
     } else {
       result.sort(
-        (a, b) => (b['learners'] as int)
-            .compareTo(a['learners'] as int),
+        (a, b) => _num(b['learners']).compareTo(_num(a['learners'])),
       );
     }
 
     return result;
   }
 
+
+  double _num(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // apply any filter already set (e.g. user tapped a category before Courses was built)
+    final initial = CourseFilter.category.value;
+    if (initial != null && categories.contains(initial)) {
+      _category = initial;
+    }
+
+    // listen for future changes
+    CourseFilter.category.addListener(_onExternalFilter);
+  }
+
+  void _onExternalFilter() {
+    final value = CourseFilter.category.value;
+    final target = (value != null && categories.contains(value))
+        ? value
+        : 'All';
+    if (target != _category) {
+      setState(() => _category = target);
+    }
+  }
+
   @override
   void dispose() {
+    CourseFilter.category.removeListener(_onExternalFilter);
     _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final wide = constraints.maxWidth >= 850;
-
-            return Row(
-              children: [
-                if (wide) const _Sidebar(),
-                Expanded(
+    return AppShell(
+      currentTab: AppTab.courses,
+      body: Column(
+        children: [
+          _TopBar(
+            controller: _searchController,
+            onSearch: (value) => setState(() => _search = value),
+            wide: MediaQuery.of(context).size.width >= 850,
+          ),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final wide = constraints.maxWidth >= 850;
+                return SingleChildScrollView(
+                  padding: EdgeInsets.all(wide ? 20 : 14),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _TopBar(
-                        controller: _searchController,
-                        onSearch: (value) {
-                          setState(() => _search = value);
-                        },
+                      const _LearningBanner(),
+                      const SizedBox(height: 20),
+                      _CategoryRow(
+                        categories: categories,
+                        selected: _category,
+                        onSelected: (value) =>
+                            setState(() => _category = value),
+                        sort: _sort,
+                        onSort: (value) => setState(() => _sort = value),
                         wide: wide,
                       ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.all(wide ? 20 : 14),
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              const _LearningBanner(),
-                              const SizedBox(height: 20),
-                              _CategoryRow(
-                                categories: categories,
-                                selected: _category,
-                                onSelected: (value) {
-                                  setState(() => _category = value);
-                                },
-                                sort: _sort,
-                                onSort: (value) {
-                                  setState(() => _sort = value);
-                                },
-                                wide: wide,
-                              ),
-                              const SizedBox(height: 20),
-                              if (filteredCourses.isEmpty)
-                                const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(32),
-                                    child: Text('No programs found.'),
-                                  ),
-                                )
-                              else
-                                GridView.builder(
-                                  shrinkWrap: true,
-                                  physics:
-                                      const NeverScrollableScrollPhysics(),
-                                  itemCount: filteredCourses.length,
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: wide
-                                        ? (constraints.maxWidth >= 1250
-                                            ? 3
-                                            : 2)
-                                        : 1,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 16,
-                                    mainAxisExtent: wide ? 242 : 250,
-                                  ),
-                                  itemBuilder: (context, index) {
-                                    return _CourseCard(
-                                      course: filteredCourses[index],
-                                    );
-                                  },
-                                ),
-                            ],
+                      const SizedBox(height: 20),
+                      if (filteredCourses.isEmpty)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Text('No programs found.'),
                           ),
+                        )
+                      else
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: filteredCourses.length,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: wide
+                                    ? (constraints.maxWidth >= 1250 ? 3 : 2)
+                                    : 1,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 16,
+                                mainAxisExtent: wide ? 242 : 250,
+                              ),
+                          itemBuilder: (context, index) {
+                            return _CourseCard(course: filteredCourses[index]);
+                          },
                         ),
-                      ),
                     ],
                   ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-// SIDEBAR
-
-class _Sidebar extends StatelessWidget {
-  const _Sidebar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          right: BorderSide(color: Color(0xFFE5EDFC)),
-        ),
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.wb_sunny,
-                    color: Colors.orange,
-                    size: 32,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'SkillBytes',
-                    style: TextStyle(
-                      fontSize: 23,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-            const Divider(color: Color(0xFFE5EDFC)),
-            const SizedBox(height: 12),
-            _navItem(Icons.home, 'Home', false),
-            _navItem(Icons.grid_view, 'Programs', true),
-            _navItem(Icons.bar_chart, 'Progress', false),
-            _navItem(Icons.person_outline, 'Profile', false),
-            _navItem(Icons.logout, 'Logout', false),
-            const SizedBox(height: 20),
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEAF2FF),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Column(
-                children: [
-                  Icon(
-                    Icons.emoji_events,
-                    color: Colors.orange,
-                    size: 64,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Keep Learning!',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 6),
-                  Text(
-                    'Your skills, your future!',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, bool selected) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: selected
-            ? const Color(0xFFE4EEFF)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: selected
-              ? AppTheme.primaryColor
-              : const Color(0xFF456087),
-        ),
-        title: Text(
-          label,
-          style: TextStyle(
-            color: selected
-                ? AppTheme.primaryColor
-                : const Color(0xFF456087),
-            fontWeight:
-                selected ? FontWeight.bold : FontWeight.w500,
           ),
-        ),
-        onTap: () {
-          // Connect these items to team navigation later.
-        },
+        ],
       ),
+      onTabSelected: (tab) => widget.onTabChange(tab.index),
     );
   }
 }
@@ -374,25 +258,17 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 12,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE5EDFC)),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE5EDFC))),
       ),
       child: Row(
         children: [
           if (!wide)
             const Padding(
               padding: EdgeInsets.only(right: 12),
-              child: Icon(
-                Icons.school,
-                color: Color(0xFF0866F5),
-              ),
+              child: Icon(Icons.school, color: Color(0xFF0866F5)),
             ),
           Expanded(
             child: SizedBox(
@@ -405,8 +281,7 @@ class _TopBar extends StatelessWidget {
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: const Color(0xFFEDF3FF),
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(28),
                     borderSide: BorderSide.none,
@@ -428,10 +303,7 @@ class _TopBar extends StatelessWidget {
             const SizedBox(width: 12),
             const CircleAvatar(
               backgroundColor: Color(0xFFD9E8FF),
-              child: Icon(
-                Icons.person,
-                color: Color(0xFF0866F5),
-              ),
+              child: Icon(Icons.person, color: Color(0xFF0866F5)),
             ),
             const SizedBox(width: 10),
             const Text(
@@ -457,10 +329,7 @@ class _LearningBanner extends StatelessWidget {
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFEAF1FF),
-            Color(0xFFD8E7FF),
-          ],
+          colors: [Color(0xFFEAF1FF), Color(0xFFD8E7FF)],
         ),
         borderRadius: BorderRadius.circular(22),
       ),
@@ -509,11 +378,7 @@ class _LearningBanner extends StatelessWidget {
             children: [
               Expanded(child: textContent),
               const SizedBox(width: 12),
-              const Icon(
-                Icons.school,
-                size: 90,
-                color: Color(0xFF397DF0),
-              ),
+              const Icon(Icons.school, size: 90, color: Color(0xFF397DF0)),
             ],
           );
         },
@@ -561,14 +426,10 @@ class _CategoryRow extends StatelessWidget {
                   selectedColor: const Color(0xFF0866F5),
                   backgroundColor: Colors.white,
                   labelStyle: TextStyle(
-                    color: active
-                        ? Colors.white
-                        : const Color(0xFF304A75),
+                    color: active ? Colors.white : const Color(0xFF304A75),
                     fontWeight: FontWeight.w600,
                   ),
-                  side: const BorderSide(
-                    color: Color(0xFFE0E9FC),
-                  ),
+                  side: const BorderSide(color: Color(0xFFE0E9FC)),
                 ),
               );
             }).toList(),
@@ -576,15 +437,9 @@ class _CategoryRow extends StatelessWidget {
         ),
         if (!wide) ...[
           const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _sortDropdown(),
-          ),
+          Align(alignment: Alignment.centerRight, child: _sortDropdown()),
         ] else
-          Align(
-            alignment: Alignment.centerRight,
-            child: _sortDropdown(),
-          ),
+          Align(alignment: Alignment.centerRight, child: _sortDropdown()),
       ],
     );
   }
@@ -594,18 +449,9 @@ class _CategoryRow extends StatelessWidget {
       value: sort,
       underline: const SizedBox(),
       items: const [
-        DropdownMenuItem(
-          value: 'Popular',
-          child: Text('Sort: Popular'),
-        ),
-        DropdownMenuItem(
-          value: 'Rating',
-          child: Text('Sort: Rating'),
-        ),
-        DropdownMenuItem(
-          value: 'Name',
-          child: Text('Sort: Name'),
-        ),
+        DropdownMenuItem(value: 'Popular', child: Text('Sort: Popular')),
+        DropdownMenuItem(value: 'Rating', child: Text('Sort: Rating')),
+        DropdownMenuItem(value: 'Name', child: Text('Sort: Name')),
       ],
       onChanged: (value) {
         if (value != null) onSort(value);
@@ -628,8 +474,8 @@ class _CourseCard extends StatelessWidget {
     final Color levelColor = level == 'Beginner'
         ? const Color(0xFFD9E8FF)
         : level == 'Intermediate'
-            ? const Color(0xFFD0F8D5)
-            : const Color(0xFFFFD9E8);
+        ? const Color(0xFFD0F8D5)
+        : const Color(0xFFFFD9E8);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -710,11 +556,7 @@ class _CourseCard extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.star,
-                      size: 17,
-                      color: Colors.orange,
-                    ),
+                    const Icon(Icons.star, size: 17, color: Colors.orange),
                     const SizedBox(width: 3),
                     Text('${course['rating']}'),
                     const SizedBox(width: 8),
@@ -757,9 +599,7 @@ class _CourseCard extends StatelessWidget {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           minimumSize: Size.zero,
                         ),
                         child: const Text(
