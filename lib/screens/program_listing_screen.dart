@@ -285,7 +285,6 @@ class _Sidebar extends StatelessWidget {
             _navItem(Icons.grid_view, 'Programs', true),
             _navItem(Icons.bar_chart, 'Progress', false),
             _navItem(Icons.person_outline, 'Profile', false),
-            _navItem(Icons.settings_outlined, 'Settings', false),
             _navItem(Icons.logout, 'Logout', false),
             const SizedBox(height: 20),
             Container(
