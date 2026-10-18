@@ -128,7 +128,7 @@ class AppSidebar extends StatelessWidget {
             _navItem(
               context,
               Icons.grid_view_outlined,
-              'Courses',
+              'Programs',
               AppTab.courses,
             ),
             _navItem(
@@ -268,7 +268,7 @@ class AppBottomNav extends StatelessWidget {
                 context,
                 Icons.grid_view_outlined,
                 Icons.grid_view,
-                'Courses',
+                'Programs',
                 AppTab.courses,
               ),
               _item(

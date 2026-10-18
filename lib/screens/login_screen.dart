@@ -149,13 +149,41 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Learn practical tech skills\nin short, focused modules.',
+                'Learn Practical Tech Skills\nin small, quick chunks.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 15,
                   height: 1.5,
                 ),
+              ),
+              const SizedBox(height: 28),
+              const _FeatureLine(
+                icon: Icons.play_circle_outline,
+                color: const Color(0xFFD9EBFF),
+                title: 'Short Lessons',
+                subtitle: '5-10 minutes each',
+              ),
+              const SizedBox(height: 16),
+              const _FeatureLine(
+                icon: Icons.show_chart,
+                color: const Color(0xFFD7F4E6),
+                title: 'Track Progress',
+                subtitle: 'See how far you\'ve come',
+              ),
+              const SizedBox(height: 16),
+              const _FeatureLine(
+                icon: Icons.layers_outlined,
+                color: const Color(0xFFFBE6C8),
+                title: 'Multiple Tracks',
+                subtitle: 'Coding, Networking, Electronics',
+              ),
+              const SizedBox(height: 16),
+              const _FeatureLine(
+                icon: Icons.groups_outlined,
+                color: const Color(0xFFF6D5E3),
+                title: 'Learn Anywhere',
+                subtitle: 'On the go, anytime',
               ),
             ],
           ),
@@ -174,14 +202,14 @@ class _LoginScreenState extends State<LoginScreen> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
-              labelText: 'Email Address',
+              labelText: 'Email address',
               prefixIcon: Icon(Icons.mail_outline),
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter your email';
               }
-              return null;
+                  : const Text('LOG IN'),
             },
           ),
           const SizedBox(height: 14),
@@ -295,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: OutlinedButton.icon(
                 onPressed: () => _stub('Google sign-in'),
                 icon: const Icon(Icons.g_mobiledata, size: 26),
-                label: const Text('Google'),
+                label: const Text('Continue with Google'),
               ),
             ),
             const SizedBox(width: 12),
@@ -303,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: OutlinedButton.icon(
                 onPressed: () => _stub('Apple sign-in'),
                 icon: const Icon(Icons.apple, size: 22),
-                label: const Text('Apple'),
+                label: const Text('Continue with Apple'),
               ),
             ),
           ],
@@ -319,12 +347,12 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           const Text(
-            "Don't have an account?",
+            'New learner?',
             style: TextStyle(fontSize: 13),
           ),
           TextButton(
             onPressed: () => _stub('Sign up'),
-            child: const Text('Sign Up'),
+            child: const Text('Create an account'),
           ),
         ],
       ),
@@ -359,7 +387,7 @@ class _BrandHeader extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text(
-          'Welcome to SkillBytes',
+          'SkillBytes',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 24,
@@ -369,9 +397,65 @@ class _BrandHeader extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         const Text(
-          'Log in to continue your learning journey',
+          'Learn Skills in Small Chunks',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeatureLine extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+
+  const _FeatureLine({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(
+            icon,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 13,
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const _categories = [
     {
-      'label': 'Coding',
+      'label': 'Programming',
       'filter': 'Programming',
       'icon': Icons.code,
       'color': Color(0xFFDDE7FF),
@@ -37,9 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
       'color': Color(0xFFEEDDFF),
     },
     {
-      'label': 'Databases',
-      'filter': 'Others',
-      'icon': Icons.storage,
+      'label': 'Hardware Skills',
+      'filter': 'Hardware Skills',
+      'icon': Icons.handyman,
       'color': Color(0xFFFFE6CC),
     },
   ];
@@ -189,11 +189,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.pushNamed(context, '/course/flutter-dev'),
                 ),
                 const SizedBox(height: 20),
-                const _StreakCard(),
-                const SizedBox(height: 22),
                 _SectionHeader(
-                  title: 'Explore Categories',
-                  actionLabel: 'See all',
+                  title: 'Learning Tracks',
+                  actionLabel: 'View All',
                   onAction: () {
                     CourseFilter.category.value = null;
                     widget.onTabChange(1);
@@ -206,8 +204,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 22),
                 _SectionHeader(
-                  title: 'Recommended',
-                  actionLabel: 'See all',
+                  title: 'Recommended Programs',
+                  actionLabel: 'View All',
                   onAction: () {
                     CourseFilter.category.value = null;
                     widget.onTabChange(1);
@@ -259,7 +257,7 @@ class _GreetingHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hello, Learner 👋',
+                'Hello, learner!',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -268,7 +266,7 @@ class _GreetingHeader extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Ready to learn today?',
+                'Keep learning, keep growing!',
                 style: TextStyle(fontSize: 13),
               ),
             ],
@@ -316,7 +314,7 @@ class _SearchBar extends StatelessWidget {
       onChanged: onChanged,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        hintText: 'Search courses, skills...',
+        hintText: 'Search programs, courses or topics...',
         prefixIcon: const Icon(Icons.search),
         suffixIcon: controller.text.isEmpty
             ? null
@@ -443,7 +441,7 @@ class _LearningBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Explore Our',
+                  'Explore',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -451,7 +449,7 @@ class _LearningBanner extends StatelessWidget {
                   ),
                 ),
                 const Text(
-                  'Learning Programs',
+                  'Programs',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -473,7 +471,7 @@ class _LearningBanner extends StatelessWidget {
                     onPressed: onBrowse,
                     icon: const Icon(Icons.arrow_forward, size: 16),
                     label: const Text(
-                      'Browse',
+                      'Explore Programs',
                       style: TextStyle(fontSize: 12),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -557,7 +555,7 @@ class _ContinueLearningCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Continue Learning',
+                        'Flutter Basics',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -565,7 +563,7 @@ class _ContinueLearningCard extends StatelessWidget {
                       ),
                       SizedBox(height: 2),
                       Text(
-                        'Flutter Development — Module 2 of 6',
+                        'Lesson 3 of 8 • Working with Widgets',
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
@@ -578,7 +576,7 @@ class _ContinueLearningCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: const LinearProgressIndicator(
-                value: 0.34,
+                value: 0.37,
                 minHeight: 8,
                 backgroundColor: Color(0xFFE2E8F0),
                 valueColor:
@@ -586,80 +584,9 @@ class _ContinueLearningCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text('34% completed', style: TextStyle(fontSize: 12)),
+            const Text('37% completed', style: TextStyle(fontSize: 12)),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Streak
-// ---------------------------------------------------------------------------
-
-class _StreakCard extends StatelessWidget {
-  const _StreakCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppTheme.darkCard : Colors.white;
-    final border = isDark ? AppTheme.darkBorder : AppTheme.borderColor;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF3B2416), const Color(0xFF2C1810)]
-              : [const Color(0xFFFFF4E0), const Color(0xFFFFE8C7)],
-        ),
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.accentColor, AppTheme.warmOrange],
-              ),
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-            ),
-            child: const Icon(
-              Icons.local_fire_department,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Daily Streak',
-                  style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Keep it up — 3 days in a row',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            '3',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.accentColor,
-            ),
-          ),
-        ],
       ),
     );
   }
