@@ -89,18 +89,29 @@ class AppSidebar extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.bolt,
-                    color: AppTheme.primaryColor,
-                    size: 30,
+                  // Brand logo — PNG in rounded square
+                  Container(
+                    width: 44,
+                    height: 44,
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryLight,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusSm),
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Text(
                     'SkillBytes',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppTheme.darkText : AppTheme.textColor,
+                      color:
+                          isDark ? AppTheme.darkText : AppTheme.textColor,
                     ),
                   ),
                 ],
@@ -154,24 +165,20 @@ class AppSidebar extends StatelessWidget {
             : Colors.transparent,
         borderRadius: BorderRadius.circular(AppTheme.radiusSm),
       ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-        child: ListTile(
-          leading: Icon(
-            icon,
-            color: selected ? AppTheme.primaryColor : inactiveColor,
-          ),
-          title: Text(
-            label,
-            style: TextStyle(
-              color: selected ? AppTheme.primaryColor : inactiveColor,
-              fontWeight:
-                  selected ? FontWeight.bold : FontWeight.w500,
-            ),
-          ),
-          onTap: () => onSelect(tab),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: selected ? AppTheme.primaryColor : inactiveColor,
         ),
+        title: Text(
+          label,
+          style: TextStyle(
+            color: selected ? AppTheme.primaryColor : inactiveColor,
+            fontWeight:
+                selected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+        onTap: () => onSelect(tab),
       ),
     );
   }
@@ -208,8 +215,9 @@ class AppSidebar extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
-              color:
-                  isDark ? AppTheme.darkSecondaryText : AppTheme.secondaryTextColor,
+              color: isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.secondaryTextColor,
             ),
           ),
         ],

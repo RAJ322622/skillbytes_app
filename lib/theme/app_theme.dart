@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // ---------- Brand colors ----------
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color primaryLight = Color(0xFFE0E7FF);
-  static const Color accentColor = Color(0xFF10B981);
+  // ---------- Brand colors (SkillBytes) ----------
+  static const Color primaryColor = Color(0xFFB31974); // Berry / Magenta
+  static const Color primaryLight = Color(0xFFFCE7F3); // Soft berry tint
+
+  static const Color accentColor = Color(0xFFF26522); // Bright Orange
+  static const Color warmOrange = Color(0xFFF8941E); // Warm Ochre
+  static const Color softGold = Color(0xFFFDCB6E); // Soft Gold / Yellow
 
   // ---------- Light ----------
   static const Color backgroundColor = Color(0xFFF8FAFC);
@@ -21,7 +24,7 @@ class AppTheme {
   static const Color darkSecondaryText = Color(0xFF94A3B8);
   static const Color darkBorder = Color(0xFF334155);
 
-  // ---------- Shared radii / spacing ----------
+  // ---------- Shared radii ----------
   static const double radiusSm = 10;
   static const double radiusMd = 14;
   static const double radiusLg = 22;
@@ -36,6 +39,8 @@ class AppTheme {
         seedColor: primaryColor,
         brightness: Brightness.light,
         primary: primaryColor,
+        secondary: accentColor,
+        tertiary: warmOrange,
         surface: cardColor,
       ),
     );
@@ -76,10 +81,8 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: cardColor,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         hintStyle: const TextStyle(color: secondaryTextColor),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
@@ -98,10 +101,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),
@@ -115,10 +116,8 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: textColor,
           side: const BorderSide(color: borderColor),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),
@@ -141,6 +140,8 @@ class AppTheme {
         seedColor: primaryColor,
         brightness: Brightness.dark,
         primary: primaryColor,
+        secondary: accentColor,
+        tertiary: warmOrange,
         surface: darkCard,
       ),
     );
@@ -181,10 +182,8 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkCard,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         hintStyle: const TextStyle(color: darkSecondaryText),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
@@ -203,10 +202,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),
@@ -220,10 +217,8 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: darkText,
           side: const BorderSide(color: darkBorder),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),

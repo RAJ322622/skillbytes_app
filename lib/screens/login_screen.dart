@@ -26,12 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _mockLogin() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-
     setState(() => _loading = true);
     await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
     setState(() => _loading = false);
-
     Navigator.pushReplacementNamed(context, '/home');
   }
 
@@ -48,16 +46,13 @@ class _LoginScreenState extends State<LoginScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final wide = constraints.maxWidth >= 850;
-            return wide
-                ? _buildWide(context)
-                : _buildMobile(context);
+            return wide ? _buildWide(context) : _buildMobile(context);
           },
         ),
       ),
     );
   }
 
-  // ---------- Mobile layout ----------
   Widget _buildMobile(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -77,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ---------- Wide layout (tablet / desktop) ----------
   Widget _buildWide(BuildContext context) {
     return Row(
       children: [
@@ -86,10 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
           flex: 4,
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 48,
-                vertical: 32,
-              ),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(
@@ -126,12 +118,27 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.bolt,
-                color: Colors.white,
-                size: 72,
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.contain,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               const Text(
                 'SkillBytes',
                 style: TextStyle(
@@ -157,7 +164,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ---------- The form ----------
   Widget _buildForm(BuildContext context) {
     return Form(
       key: _formKey,
@@ -207,19 +213,22 @@ class _LoginScreenState extends State<LoginScreen> {
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 8,
-            runSpacing: 0,
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Checkbox(
                     value: _rememberMe,
-                    onChanged: (value) =>
-                        setState(() => _rememberMe = value ?? false),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onChanged: (v) =>
+                        setState(() => _rememberMe = v ?? false),
+                    materialTapTargetSize:
+                        MaterialTapTargetSize.shrinkWrap,
                     visualDensity: VisualDensity.compact,
                   ),
-                  const Text('Remember me', style: TextStyle(fontSize: 13)),
+                  const Text(
+                    'Remember me',
+                    style: TextStyle(fontSize: 13),
+                  ),
                 ],
               ),
               TextButton(
@@ -338,14 +347,14 @@ class _BrandHeader extends StatelessWidget {
         Container(
           height: 84,
           width: 84,
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.12),
+            color: AppTheme.primaryLight,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
-          child: const Icon(
-            Icons.bolt,
-            color: AppTheme.primaryColor,
-            size: 46,
+          child: Image.asset(
+            'assets/images/logo.png',
+            fit: BoxFit.contain,
           ),
         ),
         const SizedBox(height: 18),

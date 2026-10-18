@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../widgets/app_shell.dart';
 import '../state/course_filter.dart';
 
@@ -7,7 +8,8 @@ class ProgramListingScreen extends StatefulWidget {
   const ProgramListingScreen({super.key, required this.onTabChange});
 
   @override
-  State<ProgramListingScreen> createState() => _ProgramListingScreenState();
+  State<ProgramListingScreen> createState() =>
+      _ProgramListingScreenState();
 }
 
 class _ProgramListingScreenState extends State<ProgramListingScreen> {
@@ -20,7 +22,8 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
   final List<Map<String, dynamic>> courses = [
     {
       'title': 'Flutter Development',
-      'description': 'Learn to build beautiful mobile apps with Flutter.',
+      'description':
+          'Learn to build beautiful mobile apps with Flutter.',
       'category': 'Programming',
       'level': 'Beginner',
       'rating': 4.8,
@@ -31,7 +34,8 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     },
     {
       'title': 'Python Programming',
-      'description': 'Start coding with Python from basics to advanced.',
+      'description':
+          'Start coding with Python from basics to advanced.',
       'category': 'Programming',
       'level': 'Beginner',
       'rating': 4.7,
@@ -42,7 +46,8 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     },
     {
       'title': 'Networking Basics',
-      'description': 'Understand computer networks, IP, and protocols.',
+      'description':
+          'Understand computer networks, IP, and protocols.',
       'category': 'Networking',
       'level': 'Intermediate',
       'rating': 4.6,
@@ -53,7 +58,8 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     },
     {
       'title': 'Electronics Basics',
-      'description': 'Explore basic electronics components and circuits.',
+      'description':
+          'Explore basic electronics components and circuits.',
       'category': 'Electronics',
       'level': 'Beginner',
       'rating': 4.7,
@@ -64,7 +70,8 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     },
     {
       'title': 'Hardware Skills',
-      'description': 'Learn about hardware tools, devices, and maintenance.',
+      'description':
+          'Learn about hardware tools, devices, and maintenance.',
       'category': 'Hardware Skills',
       'level': 'Intermediate',
       'rating': 4.5,
@@ -75,7 +82,8 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     },
     {
       'title': 'Web Development',
-      'description': 'Build modern web applications using HTML, CSS and JS.',
+      'description':
+          'Build modern web applications using HTML, CSS and JS.',
       'category': 'Programming',
       'level': 'Advanced',
       'rating': 4.9,
@@ -94,6 +102,40 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     'Hardware Skills',
     'Others',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    final initial = CourseFilter.category.value;
+    if (initial != null && categories.contains(initial)) {
+      _category = initial;
+    }
+
+    CourseFilter.category.addListener(_onExternalFilter);
+  }
+
+  void _onExternalFilter() {
+    final value = CourseFilter.category.value;
+    final target =
+        (value != null && categories.contains(value)) ? value : 'All';
+    if (target != _category) {
+      setState(() => _category = target);
+    }
+  }
+
+  @override
+  void dispose() {
+    CourseFilter.category.removeListener(_onExternalFilter);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  double _num(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0;
+    return 0;
+  }
 
   List<Map<String, dynamic>> get filteredCourses {
     final result = courses.where((course) {
@@ -117,59 +159,38 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     }).toList();
 
     if (_sort == 'Rating') {
-      result.sort(
-        (a, b) => _num(b['rating']).compareTo(_num(a['rating'])),
-      );
+      result.sort((a, b) => _num(b['rating']).compareTo(_num(a['rating'])));
     } else if (_sort == 'Name') {
       result.sort(
-        (a, b) => (a['title'] as String)
-            .compareTo(b['title'] as String),
+        (a, b) => (a['title'] as String).compareTo(b['title'] as String),
       );
     } else {
       result.sort(
-        (a, b) => _num(b['learners']).compareTo(_num(a['learners'])),
+        (a, b) =>
+            _num(b['learners']).compareTo(_num(a['learners'])),
       );
     }
 
     return result;
   }
 
-
-  double _num(dynamic value) {
-    if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0;
-    return 0;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // apply any filter already set (e.g. user tapped a category before Courses was built)
-    final initial = CourseFilter.category.value;
-    if (initial != null && categories.contains(initial)) {
-      _category = initial;
+  String _courseIdFromTitle(String title) {
+    switch (title) {
+      case 'Flutter Development':
+        return 'flutter-dev';
+      case 'Python Programming':
+        return 'python-prog';
+      case 'Networking Basics':
+        return 'networking-basics';
+      case 'Electronics Basics':
+        return 'electronics-basics';
+      case 'Web Development':
+        return 'web-dev';
+      case 'Hardware Skills':
+        return 'hardware-skills';
+      default:
+        return 'flutter-dev';
     }
-
-    // listen for future changes
-    CourseFilter.category.addListener(_onExternalFilter);
-  }
-
-  void _onExternalFilter() {
-    final value = CourseFilter.category.value;
-    final target = (value != null && categories.contains(value))
-        ? value
-        : 'All';
-    if (target != _category) {
-      setState(() => _category = target);
-    }
-  }
-
-  @override
-  void dispose() {
-    CourseFilter.category.removeListener(_onExternalFilter);
-    _searchController.dispose();
-    super.dispose();
   }
 
   @override
@@ -181,7 +202,6 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
           _TopBar(
             controller: _searchController,
             onSearch: (value) => setState(() => _search = value),
-            wide: MediaQuery.of(context).size.width >= 850,
           ),
           Expanded(
             child: LayoutBuilder(
@@ -192,15 +212,23 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const _LearningBanner(),
-                      const SizedBox(height: 20),
+                      // Page title
+                      const Text(
+                        'All Courses',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       _CategoryRow(
                         categories: categories,
                         selected: _category,
                         onSelected: (value) =>
                             setState(() => _category = value),
                         sort: _sort,
-                        onSort: (value) => setState(() => _sort = value),
+                        onSort: (value) =>
+                            setState(() => _sort = value),
                         wide: wide,
                       ),
                       const SizedBox(height: 20),
@@ -208,7 +236,7 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
                         const Center(
                           child: Padding(
                             padding: EdgeInsets.all(32),
-                            child: Text('No programs found.'),
+                            child: Text('No courses found.'),
                           ),
                         )
                       else
@@ -218,15 +246,26 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
                           itemCount: filteredCourses.length,
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: wide
-                                    ? (constraints.maxWidth >= 1250 ? 3 : 2)
-                                    : 1,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 16,
-                                mainAxisExtent: wide ? 242 : 250,
-                              ),
+                            crossAxisCount: wide
+                                ? (constraints.maxWidth >= 1250
+                                    ? 3
+                                    : 2)
+                                : 1,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 16,
+                            mainAxisExtent: wide ? 242 : 250,
+                          ),
                           itemBuilder: (context, index) {
-                            return _CourseCard(course: filteredCourses[index]);
+                            return _CourseCard(
+                              course: filteredCourses[index],
+                              onOpen: () {
+                                final id = _courseIdFromTitle(
+                                    filteredCourses[index]['title']
+                                        as String);
+                                Navigator.pushNamed(
+                                    context, '/course/$id');
+                              },
+                            );
                           },
                         ),
                     ],
@@ -242,152 +281,72 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
   }
 }
 
-// TOP BAR
+// ---------------------------------------------------------------------------
+// Top bar
+// ---------------------------------------------------------------------------
 
 class _TopBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onSearch;
-  final bool wide;
 
   const _TopBar({
     required this.controller,
     required this.onSearch,
-    required this.wide,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppTheme.darkCard : Colors.white;
+    final border = isDark ? AppTheme.darkBorder : AppTheme.borderColor;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5EDFC))),
+      decoration: BoxDecoration(
+        color: bg,
+        border: Border(bottom: BorderSide(color: border)),
       ),
       child: Row(
         children: [
-          if (!wide)
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Icon(Icons.school, color: Color(0xFF0866F5)),
+          // Brand logo (mobile)
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Container(
+              width: 34,
+              height: 34,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryLight,
+                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+              ),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
+              ),
             ),
+          ),
           Expanded(
             child: SizedBox(
               height: 48,
               child: TextField(
                 controller: controller,
                 onChanged: onSearch,
-                decoration: InputDecoration(
-                  hintText: 'Search for courses, topics or skills...',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: const Color(0xFFEDF3FF),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(28),
-                    borderSide: BorderSide.none,
-                  ),
+                decoration: const InputDecoration(
+                  hintText: 'Search courses...',
+                  prefixIcon: Icon(Icons.search),
                 ),
               ),
             ),
           ),
-          if (wide) ...[
-            const SizedBox(width: 24),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.notifications_none,
-                color: Color(0xFF102653),
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const CircleAvatar(
-              backgroundColor: Color(0xFFD9E8FF),
-              child: Icon(Icons.person, color: Color(0xFF0866F5)),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Hi, Learners!',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
         ],
       ),
     );
   }
 }
 
-// LEARNING BANNER
-
-class _LearningBanner extends StatelessWidget {
-  const _LearningBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFEAF1FF), Color(0xFFD8E7FF)],
-        ),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 500;
-
-          final textContent = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Explore Our',
-                style: TextStyle(
-                  fontSize: compact ? 24 : 30,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF102653),
-                ),
-              ),
-              Text(
-                'Learning Programs',
-                style: TextStyle(
-                  fontSize: compact ? 24 : 30,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0866F5),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Build skills. Learn at your own pace. Grow your career.',
-                style: TextStyle(color: Color(0xFF456087)),
-              ),
-              const SizedBox(height: 18),
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Start Learning'),
-              ),
-            ],
-          );
-
-          if (compact) {
-            return textContent;
-          }
-
-          return Row(
-            children: [
-              Expanded(child: textContent),
-              const SizedBox(width: 12),
-              const Icon(Icons.school, size: 90, color: Color(0xFF397DF0)),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-// CATEGORIES AND SORTING
+// ---------------------------------------------------------------------------
+// Categories and sorting
+// ---------------------------------------------------------------------------
 
 class _CategoryRow extends StatelessWidget {
   final List<String> categories;
@@ -416,20 +375,20 @@ class _CategoryRow extends StatelessWidget {
           child: Row(
             children: categories.map((category) {
               final active = selected == category;
-
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
                   label: Text(category),
                   selected: active,
                   onSelected: (_) => onSelected(category),
-                  selectedColor: const Color(0xFF0866F5),
-                  backgroundColor: Colors.white,
+                  selectedColor: AppTheme.primaryColor,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   labelStyle: TextStyle(
-                    color: active ? Colors.white : const Color(0xFF304A75),
+                    color: active
+                        ? Colors.white
+                        : AppTheme.secondaryTextColor,
                     fontWeight: FontWeight.w600,
                   ),
-                  side: const BorderSide(color: Color(0xFFE0E9FC)),
                 ),
               );
             }).toList(),
@@ -437,9 +396,15 @@ class _CategoryRow extends StatelessWidget {
         ),
         if (!wide) ...[
           const SizedBox(height: 10),
-          Align(alignment: Alignment.centerRight, child: _sortDropdown()),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _sortDropdown(),
+          ),
         ] else
-          Align(alignment: Alignment.centerRight, child: _sortDropdown()),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _sortDropdown(),
+          ),
       ],
     );
   }
@@ -460,36 +425,36 @@ class _CategoryRow extends StatelessWidget {
   }
 }
 
-// PROGRAM CARD
+// ---------------------------------------------------------------------------
+// Course card
+// ---------------------------------------------------------------------------
 
 class _CourseCard extends StatelessWidget {
   final Map<String, dynamic> course;
+  final VoidCallback onOpen;
 
-  const _CourseCard({required this.course});
+  const _CourseCard({required this.course, required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
-    final level = course['level'] as String;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppTheme.darkCard : Colors.white;
+    final border = isDark ? AppTheme.darkBorder : AppTheme.borderColor;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.textColor;
 
-    final Color levelColor = level == 'Beginner'
+    final level = course['level'] as String;
+    final levelColor = level == 'Beginner'
         ? const Color(0xFFD9E8FF)
         : level == 'Intermediate'
-        ? const Color(0xFFD0F8D5)
-        : const Color(0xFFFFD9E8);
+            ? const Color(0xFFD0F8D5)
+            : const Color(0xFFFFD9E8);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE3ECFC)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0C174B91),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
+        color: cardBg,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(color: border),
       ),
       child: Row(
         children: [
@@ -499,12 +464,12 @@ class _CourseCard extends StatelessWidget {
               height: double.infinity,
               decoration: BoxDecoration(
                 color: course['color'] as Color,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
               ),
               child: Icon(
                 course['icon'] as IconData,
-                size: 64,
-                color: const Color(0xFF0866F5),
+                size: 56,
+                color: AppTheme.primaryColor,
               ),
             ),
           ),
@@ -516,9 +481,7 @@ class _CourseCard extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 9,
-                    vertical: 4,
-                  ),
+                      horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
                     color: levelColor,
                     borderRadius: BorderRadius.circular(20),
@@ -528,6 +491,7 @@ class _CourseCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
                   ),
                 ),
@@ -536,10 +500,10 @@ class _CourseCard extends StatelessWidget {
                   course['title'] as String,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF102653),
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -550,19 +514,22 @@ class _CourseCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF456087),
+                      color: AppTheme.secondaryTextColor,
                     ),
                   ),
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.star, size: 17, color: Colors.orange),
+                    const Icon(Icons.star, size: 16, color: Colors.orange),
                     const SizedBox(width: 3),
-                    Text('${course['rating']}'),
+                    Text(
+                      '${course['rating']}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        '${((course['learners'] as int) / 1000).toStringAsFixed(1)}K learners',
+                        '${((course['learners'] as int) / 1000).toStringAsFixed(1)}K',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 11),
                       ),
@@ -574,36 +541,27 @@ class _CourseCard extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.access_time,
-                      size: 17,
-                      color: Color(0xFF456087),
+                      size: 16,
+                      color: AppTheme.secondaryTextColor,
                     ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        '${course['hours']} hours',
+                        '${course['hours']}h',
                         style: const TextStyle(fontSize: 12),
                       ),
                     ),
                     SizedBox(
-                      height: 36,
+                      height: 32,
                       child: ElevatedButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Selected ${course['title']}. '
-                                'Program Details navigation will be '
-                                'connected next.',
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: onOpen,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12),
                           minimumSize: Size.zero,
                         ),
                         child: const Text(
-                          'Enroll',
+                          'View',
                           style: TextStyle(fontSize: 12),
                         ),
                       ),

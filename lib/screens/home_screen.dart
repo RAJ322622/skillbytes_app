@@ -103,10 +103,28 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.onTabChange(1);
   }
 
-  void _courseDetailsStub(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$title — course details coming soon')),
-    );
+  String _courseIdFromTitle(String title) {
+    switch (title) {
+      case 'Flutter Development':
+        return 'flutter-dev';
+      case 'Python Programming':
+        return 'python-prog';
+      case 'Networking Basics':
+        return 'networking-basics';
+      case 'Electronics Basics':
+        return 'electronics-basics';
+      case 'Web Development':
+        return 'web-dev';
+      case 'Hardware Skills':
+        return 'hardware-skills';
+      default:
+        return 'flutter-dev';
+    }
+  }
+
+  void _openCourse(BuildContext context, String title) {
+    final id = _courseIdFromTitle(title);
+    Navigator.pushNamed(context, '/course/$id');
   }
 
   void _showNotifications(BuildContext context) {
@@ -134,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _GreetingHeader(
                 onNotifications: () => _showNotifications(context),
-                onAvatar: () => widget.onTabChange(2), // Profile tab
+                onAvatar: () => widget.onTabChange(2),
               ),
               const SizedBox(height: 18),
               _SearchBar(
@@ -154,14 +172,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 _SearchResults(
                   results: _searchResults,
-                  onTap: (title) => _courseDetailsStub(context, title),
+                  onTap: (title) => _openCourse(context, title),
                 ),
               ],
               if (!_showResults) ...[
+                const SizedBox(height: 16),
+                _LearningBanner(
+                  onBrowse: () {
+                    CourseFilter.category.value = null;
+                    widget.onTabChange(1);
+                  },
+                ),
                 const SizedBox(height: 20),
                 _ContinueLearningCard(
                   onTap: () =>
-                      _courseDetailsStub(context, 'Flutter Development'),
+                      Navigator.pushNamed(context, '/course/flutter-dev'),
                 ),
                 const SizedBox(height: 20),
                 const _StreakCard(),
@@ -189,15 +214,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                ..._allCourses
-                    .take(3)
-                    .map(
+                ..._allCourses.take(3).map(
                       (c) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _RecommendedTile(
                           data: c,
                           onTap: () =>
-                              _courseDetailsStub(context, c['title'] as String),
+                              _openCourse(context, c['title'] as String),
                         ),
                       ),
                     ),
@@ -383,6 +406,112 @@ class _SearchResults extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Learning Banner (moved from listing screen)
+// ---------------------------------------------------------------------------
+
+class _LearningBanner extends StatelessWidget {
+  final VoidCallback onBrowse;
+  const _LearningBanner({required this.onBrowse});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [
+                  Color(0xFF7A0F4D), // dark berry
+                  Color(0xFF9A3A18), // dark orange
+                ]
+              : const [
+                  Color(0xFFB31974), // berry
+                  Color(0xFFF26522), // bright orange
+                ],
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Explore Our',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const Text(
+                  'Learning Programs',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.softGold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Build skills. Learn at your own pace.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 34,
+                  child: ElevatedButton.icon(
+                    onPressed: onBrowse,
+                    icon: const Icon(Icons.arrow_forward, size: 16),
+                    label: const Text(
+                      'Browse',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppTheme.primaryColor,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 80,
+            height: 80,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.10), // Almost invisible
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.20), // Subtle outline
+                width: 1,
+              ),
+            ),
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Continue Learning
 // ---------------------------------------------------------------------------
 
@@ -436,7 +565,7 @@ class _ContinueLearningCard extends StatelessWidget {
                       ),
                       SizedBox(height: 2),
                       Text(
-                        'Flutter Development — Module 3 of 6',
+                        'Flutter Development — Module 2 of 6',
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
@@ -449,16 +578,15 @@ class _ContinueLearningCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: const LinearProgressIndicator(
-                value: 0.5,
+                value: 0.34,
                 minHeight: 8,
                 backgroundColor: Color(0xFFE2E8F0),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  AppTheme.primaryColor,
-                ),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
               ),
             ),
             const SizedBox(height: 8),
-            const Text('50% completed', style: TextStyle(fontSize: 12)),
+            const Text('34% completed', style: TextStyle(fontSize: 12)),
           ],
         ),
       ),
@@ -467,7 +595,7 @@ class _ContinueLearningCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Streak (display only)
+// Streak
 // ---------------------------------------------------------------------------
 
 class _StreakCard extends StatelessWidget {
@@ -482,7 +610,11 @@ class _StreakCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cardBg,
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF3B2416), const Color(0xFF2C1810)]
+              : [const Color(0xFFFFF4E0), const Color(0xFFFFE8C7)],
+        ),
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(color: border),
       ),
@@ -491,12 +623,14 @@ class _StreakCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF1D6),
+              gradient: const LinearGradient(
+                colors: [AppTheme.accentColor, AppTheme.warmOrange],
+              ),
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
             child: const Icon(
               Icons.local_fire_department,
-              color: Colors.orange,
+              color: Colors.white,
             ),
           ),
           const SizedBox(width: 12),
@@ -506,11 +640,12 @@ class _StreakCard extends StatelessWidget {
               children: [
                 Text(
                   'Daily Streak',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style:
+                      TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'Keep it up — 3 days in a row 🔥',
+                  'Keep it up — 3 days in a row',
                   style: TextStyle(fontSize: 12),
                 ),
               ],
@@ -521,7 +656,7 @@ class _StreakCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: AppTheme.primaryColor,
+              color: AppTheme.accentColor,
             ),
           ),
         ],
@@ -597,7 +732,8 @@ class _CategoryGrid extends StatelessWidget {
             final item = items[index];
             final isDark = Theme.of(context).brightness == Brightness.dark;
             final cardBg = isDark ? AppTheme.darkCard : Colors.white;
-            final border = isDark ? AppTheme.darkBorder : AppTheme.borderColor;
+            final border =
+                isDark ? AppTheme.darkBorder : AppTheme.borderColor;
 
             return InkWell(
               onTap: () => onTap(item['filter'] as String),
@@ -615,7 +751,8 @@ class _CategoryGrid extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: item['color'] as Color,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusSm),
                       ),
                       child: Icon(
                         item['icon'] as IconData,
@@ -799,7 +936,8 @@ class _NotificationsSheet extends StatelessWidget {
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _mockNotifications.length,
-                separatorBuilder: (_, _) => Divider(height: 1, color: border),
+                separatorBuilder: (_, _) =>
+                    Divider(height: 1, color: border),
                 itemBuilder: (context, i) {
                   final n = _mockNotifications[i];
                   final unread = n['unread'] as bool;
@@ -810,7 +948,8 @@ class _NotificationsSheet extends StatelessWidget {
                       height: 42,
                       decoration: BoxDecoration(
                         color: n['color'] as Color,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusSm),
                       ),
                       child: Icon(
                         n['icon'] as IconData,
