@@ -209,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter your email';
               }
-                  : const Text('LOG IN'),
+              return null;
             },
           ),
           const SizedBox(height: 14),

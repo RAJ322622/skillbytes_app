@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import 'data/course_repository.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_shell.dart';
 import 'screens/program_details_screen.dart';
@@ -26,6 +27,11 @@ class SkillBytesApp extends StatelessWidget {
         // /course/:id
         if (name.startsWith('/course/')) {
           final id = name.substring('/course/'.length);
+          if (CourseRepository.instance.byId(id) == null) {
+            return MaterialPageRoute(
+              builder: (_) => const _UnknownCourseScreen(),
+            );
+          }
           return MaterialPageRoute(
             builder: (_) => CourseDetailsScreen(courseId: id),
           );
@@ -46,6 +52,38 @@ class SkillBytesApp extends StatelessWidget {
             );
         }
       },
+    );
+  }
+}
+
+class _UnknownCourseScreen extends StatelessWidget {
+  const _UnknownCourseScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Course unavailable'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('This course could not be found.'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pushReplacementNamed(
+                  context,
+                  '/home',
+                ),
+                child: const Text('Back to Home'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
