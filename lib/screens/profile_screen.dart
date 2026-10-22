@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_shell.dart';
-
+import 'feedback_screen.dart';
 class ProfileScreen extends StatelessWidget {
   final ValueChanged<int> onTabChange;
   const ProfileScreen({super.key, required this.onTabChange});
@@ -57,6 +57,19 @@ class ProfileScreen extends StatelessWidget {
             _tile(context, Icons.school_outlined, 'My Courses'),
             _tile(context, Icons.bar_chart_outlined, 'Progress'),
             _tile(context, Icons.settings_outlined, 'Settings'),
+            _tile(
+                  context,
+                  Icons.feedback_outlined,
+                  'Feedback & Support',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FeedbackScreen(),
+                      ),
+                    );
+                  },
+                ),
             _tile(context, Icons.logout, 'Logout', danger: true,
                 onTap: () => Navigator.pushReplacementNamed(context, '/')),
           ],

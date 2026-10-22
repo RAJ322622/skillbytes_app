@@ -1,5 +1,8 @@
+
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'signup_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -232,7 +235,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               TextButton(
-                onPressed: () => _stub('Forgot password'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordScreen(),
+                    ),
+                  );
+                },
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   minimumSize: Size.zero,
@@ -323,7 +333,14 @@ class _LoginScreenState extends State<LoginScreen> {
             style: TextStyle(fontSize: 13),
           ),
           TextButton(
-            onPressed: () => _stub('Sign up'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SignupScreen(),
+                ),
+              );
+            },
             child: const Text('Sign Up'),
           ),
         ],
