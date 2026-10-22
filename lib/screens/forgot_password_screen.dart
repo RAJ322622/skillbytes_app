@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -13,9 +14,6 @@ class _ForgotPasswordScreenState
     extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-
-  static const Color navy = Color(0xFF101529);
-  static const Color pink = Color(0xFFE50983);
 
   @override
   void dispose() {
@@ -56,12 +54,10 @@ class _ForgotPasswordScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: navy,
       appBar: AppBar(
-        backgroundColor: navy,
-        foregroundColor: Colors.white,
-        elevation: 0,
         title: const Text('Forgot Password'),
       ),
       body: SafeArea(
@@ -75,28 +71,26 @@ class _ForgotPasswordScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(
-                      Icons.lock_reset_rounded,
-                      color: pink,
-                      size: 72,
-                    ),
+                    Image.asset(
+                        'assets/images/logo.png',
+                        width: 84,
+                        height: 84,
+                        fit: BoxFit.contain,
+                      ),
                     const SizedBox(height: 24),
-                    const Text(
+
+                    Text(
                       'Reset your password',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 27,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: theme.textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+
+                    Text(
                       'Enter the email address associated with '
                       'your account to request a password reset.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white70,
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         height: 1.5,
                       ),
                     ),
@@ -104,19 +98,10 @@ class _ForgotPasswordScreenState
 
                     TextFormField(
                       controller: _emailController,
-                      style: const TextStyle(color: Colors.white),
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email address',
-                        prefixIcon: const Icon(
-                          Icons.email_outlined,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF202A3D),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
+                        prefixIcon: Icon(Icons.email_outlined),
                       ),
                       validator: _validateEmail,
                     ),
@@ -126,20 +111,7 @@ class _ForgotPasswordScreenState
                       height: 52,
                       child: ElevatedButton(
                         onPressed: _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: pink,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          'Submit',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: const Text('Submit'),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -149,7 +121,7 @@ class _ForgotPasswordScreenState
                       icon: const Icon(Icons.arrow_back),
                       label: const Text('Back to Login'),
                       style: TextButton.styleFrom(
-                        foregroundColor: pink,
+                        foregroundColor: AppTheme.primaryColor,
                       ),
                     ),
                   ],
