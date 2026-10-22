@@ -114,14 +114,37 @@ The `docs/` and `wireframes/` folders will contain the project proposal, user jo
 - GitHub repository with the initial Flutter project
 - Project README and navigation flow
 
-## 12. Repository
+# 12. SkillBytes App - Week 3 Update
+
+## 🚀 What Changed This Week?
+During Week 3, our team transitioned the app from static hardcoded UI screens to a fully functional, interactive, and data-driven Flutter application.
+
+
+### 1. API & JSON Data Integration
+**Dynamic Content:** Program Listing and Program Details screens now fetch and display real data dynamically from a mock API / sample JSON data source instead of static text.
+### 2. Forms & Validation
+**Interactive Forms:** Implemented a working form (feedback/registration) allowing users to submit input.
+**Input Validation:** Added validation rules ensuring fields cannot be left empty and email inputs adhere to proper formatting requirements.
+### 3. Loading & Error Handling UX
+**Loading States:** Integrated CircularProgressIndicator widgets to provide visual feedback during data fetching.
+**Error Management:** Implemented try/catch error handling blocks with user-friendly error messages to ensure a smooth user experience.
+---
+## 💻 Team Contributions
+**Philip Gbafa:** Fetched data from mock API/JSON and integrated Listing & Details screens.
+**Rajkumar A:** Built the form UI (TextFormField) with robust input validation.
+**Muhammad H S:** Implemented loading spinners and error handling/states.
+**Saanchi Agarwal:** Updated the GitHub README.md documentation.
+**Shafiya Anam & Sharnice Obeng:** Authored the comprehensive Changelog documenting connected data screens, form functionality, loading spinners, and error handling.
+**Thembinkosi Bhebe:** Conducted final reviews and managed deliverables submission.
+
+## 13. Repository
 
 GitHub: https://github.com/RAJ322622/skillbytes_app
 
-## 13. Future Enhancements
+## 14. Future Enhancements
 
 Potential future features include quizzes, certificates, offline lessons, reminder notifications, interactive electronics simulations, and community discussions.
 
-## 14. Conclusion
+## 15. Conclusion
 
 SkillBytes aims to make practical technology learning easier to begin and maintain through short lessons, structured courses, and progress tracking. This repository provides the initial foundation for the team's collaborative development.
