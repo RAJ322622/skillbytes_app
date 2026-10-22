@@ -3,64 +3,60 @@ import '../data/course_repository.dart';
 import '../models/course.dart';
 import '../theme/app_theme.dart';
 
-class CourseDetailsScreen extends StatefulWidget {
+class ProgramDetailsScreen extends StatefulWidget {
   final String courseId;
-  const CourseDetailsScreen({super.key, required this.courseId});
+  const ProgramDetailsScreen({super.key, required this.courseId});
 
   @override
-  State<CourseDetailsScreen> createState() => _CourseDetailsScreenState();
+  State<ProgramDetailsScreen> createState() =>
+      _ProgramDetailsScreenState();
 }
 
-class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
-  late Course _course;
+class _ProgramDetailsScreenState extends State<ProgramDetailsScreen> {
+  late Future<Course?> _courseFuture;
 
   @override
   void initState() {
     super.initState();
-    _course = CourseRepository.instance.byId(widget.courseId) ??
-        CourseRepository.instance.all.first;
+    _courseFuture =
+        CourseRepository.instance.fetchCourseById(widget.courseId);
   }
 
-  bool get _isEnrolled =>
-      _course.modules.any((m) => m.status != ModuleStatus.locked);
-
-  bool get _hasProgress => _course.modules
-      .any((m) => m.status == ModuleStatus.completed);
-
-  double get _progress {
-    if (_course.modules.isEmpty) return 0;
-    final done = _course.modules
-        .where((m) => m.status == ModuleStatus.completed)
-        .length;
-    return done / _course.modules.length;
-  }
-
-  CourseModule? get _currentModule {
-    for (final m in _course.modules) {
-      if (m.status == ModuleStatus.inProgress) return m;
-    }
-    return null;
+  void _retry() {
+    setState(() {
+      _courseFuture =
+          CourseRepository.instance.fetchCourseById(widget.courseId);
+    });
   }
 
   void _refresh() {
     setState(() {
-      _course = CourseRepository.instance.byId(widget.courseId)!;
+      _courseFuture = Future.value(
+        CourseRepository.instance.cached
+            ?.firstWhere((c) => c.id == widget.courseId),
+      );
     });
   }
 
-  void _onEnroll() {
-    CourseRepository.instance.enroll(_course.id);
+  void _onEnroll(Course course) {
+    CourseRepository.instance.enroll(course.id);
     _refresh();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Enrolled in ${_course.title}!')),
+      SnackBar(content: Text('Enrolled in ${course.title}!')),
     );
   }
 
-  void _onContinue() {
-    final m = _currentModule;
-    if (m == null) return;
+  void _onContinue(Course course) {
+    CourseModule? current;
+    for (final m in course.modules) {
+      if (m.status == ModuleStatus.inProgress) {
+        current = m;
+        break;
+      }
+    }
+    if (current == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Resuming "${m.title}"...')),
+      SnackBar(content: Text('Resuming "${current.title}"...')),
     );
   }
 
@@ -88,184 +84,103 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? AppTheme.darkText : AppTheme.textColor;
-    final bg = isDark ? AppTheme.darkBackground : AppTheme.backgroundColor;
-
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         top: false,
-        child: CustomScrollView(
-          slivers: [
-            // Banner + floating back button
-            SliverAppBar(
-              expandedHeight: 200,
-              pinned: true,
-              backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
-              leading: Padding(
-                padding: const EdgeInsets.all(8),
-                child: CircleAvatar(
-                  backgroundColor: isDark
-                      ? AppTheme.darkBackground.withValues(alpha: 0.85)
-                      : Colors.white.withValues(alpha: 0.9),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  color: _course.color,
-                  child: Center(
-                    child: Icon(
-                      _course.icon,
-                      size: 96,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Body
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+        child: FutureBuilder<Course?>(
+          future: _courseFuture,
+          builder: (context, snapshot) {
+            // =====================================================
+            // LOADING STATE
+            // TODO(Muhammad): Replace with polished loading UI
+            // =====================================================
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title + badge
-                    Text(
-                      _course.title,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _badge(_course.category, AppTheme.primaryLight,
-                            AppTheme.primaryColor),
-                        _badge(
-                          _course.level,
-                          _levelColor(_course.level),
-                          Colors.black87,
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-                    // Metadata row
-                    _metaRow(context),
-                    const SizedBox(height: 20),
-
-                    // Progress (if enrolled)
-                    if (_isEnrolled) ...[
-                      _progressBlock(context),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Overview
-                    _sectionHeader('Overview', textColor),
-                    const SizedBox(height: 8),
-                    Text(
-                      _course.description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: AppTheme.secondaryTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // What you'll learn
-                    _sectionHeader("What you'll learn", textColor),
-                    const SizedBox(height: 10),
-                    ..._course.outcomes.map(
-                      (o) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.check_circle,
-                              size: 18,
-                              color: AppTheme.accentColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                o,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Modules
-                    _sectionHeader('Course Modules', textColor),
-                    const SizedBox(height: 12),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 12),
+                    Text('Loading course...'),
                   ],
                 ),
-              ),
-            ),
+              );
+            }
 
-            // Modules list
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) {
-                  final m = _course.modules[i];
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                    child: _ModuleRow(
-                      index: i + 1,
-                      module: m,
-                      onTap: () => _onModuleTap(m),
-                    ),
-                  );
-                },
-                childCount: _course.modules.length,
-              ),
-            ),
+            // =====================================================
+            // ERROR STATE
+            // TODO(Muhammad): Replace with polished error UI
+            // =====================================================
+            if (snapshot.hasError) {
+              return _errorView(
+                message: 'Failed to load course',
+                error: '${snapshot.error}',
+                onRetry: _retry,
+              );
+            }
 
-            // Bottom padding so the sticky button doesn't overlap content
-            const SliverToBoxAdapter(child: SizedBox(height: 110)),
-          ],
+            // Not found
+            final course = snapshot.data;
+            if (course == null) {
+              return _errorView(
+                message: 'Course not found',
+                error: 'No course with id "${widget.courseId}"',
+                onRetry: _retry,
+              );
+            }
+
+            // =====================================================
+            // SUCCESS STATE
+            // =====================================================
+            final isEnrolled =
+                course.modules.any((m) => m.status != ModuleStatus.locked);
+
+            return Stack(
+              children: [
+                _buildDetails(course),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: _stickyButton(
+                    isEnrolled: isEnrolled,
+                    onPressed: () => isEnrolled
+                        ? _onContinue(course)
+                        : _onEnroll(course),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
+    );
+  }
 
-      // Sticky action button
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkCard : Colors.white,
-          border: Border(
-            top: BorderSide(
-              color: isDark ? AppTheme.darkBorder : AppTheme.borderColor,
-            ),
+  Widget _stickyButton({
+    required bool isEnrolled,
+    required VoidCallback onPressed,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? AppTheme.darkBorder : AppTheme.borderColor,
           ),
         ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _isEnrolled ? _onContinue : _onEnroll,
-              child: Text(
-                _isEnrolled ? 'Continue Learning' : 'Enroll Now',
-              ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 52,
+          child: ElevatedButton(
+            onPressed: onPressed,
+            child: Text(
+              isEnrolled ? 'Continue Learning' : 'Enroll Now',
             ),
           ),
         ),
@@ -273,7 +188,216 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
-  // ---------- Sub-builders ----------
+  Widget _errorView({
+    required String message,
+    required String error,
+    required VoidCallback onRetry,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 12),
+            Text(message),
+            const SizedBox(height: 4),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetails(Course course) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.textColor;
+
+    final isEnrolled =
+        course.modules.any((m) => m.status != ModuleStatus.locked);
+
+    final progress = course.modules.isEmpty
+        ? 0.0
+        : course.modules
+                .where((m) => m.status == ModuleStatus.completed)
+                .length /
+            course.modules.length;
+
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 200,
+          pinned: true,
+          backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
+          leading: Padding(
+            padding: const EdgeInsets.all(8),
+            child: CircleAvatar(
+              backgroundColor: isDark
+                  ? AppTheme.darkBackground.withValues(alpha: 0.85)
+                  : Colors.white.withValues(alpha: 0.9),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ),
+          flexibleSpace: FlexibleSpaceBar(
+            background: Container(
+              color: course.color,
+              child: Center(
+                child: Icon(
+                  course.icon,
+                  size: 96,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.title,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _badge(course.category, AppTheme.primaryLight,
+                        AppTheme.primaryColor),
+                    _badge(
+                      course.level,
+                      _levelColor(course.level),
+                      Colors.black87,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _meta(Icons.star, '${course.rating}', Colors.orange),
+                    const SizedBox(width: 16),
+                    _meta(Icons.people_outline,
+                        '${(course.learners / 1000).toStringAsFixed(1)}K',
+                        null),
+                    const SizedBox(width: 16),
+                    _meta(Icons.access_time, '${course.hours}h', null),
+                    const SizedBox(width: 16),
+                    _meta(Icons.menu_book_outlined,
+                        '${course.modules.length} modules', null),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                if (isEnrolled) ...[
+                  _progressBlock(isDark, progress),
+                  const SizedBox(height: 20),
+                ],
+                Text(
+                  'Overview',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  course.description,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: AppTheme.secondaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "What you'll learn",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ...course.outcomes.map(
+                  (o) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          size: 18,
+                          color: AppTheme.accentColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            o,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Course Modules',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        ),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, i) {
+              final m = course.modules[i];
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                child: _ModuleRow(
+                  index: i + 1,
+                  module: m,
+                  onTap: () => _onModuleTap(m),
+                ),
+              );
+            },
+            childCount: course.modules.length,
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 110)),
+      ],
+    );
+  }
 
   Widget _badge(String label, Color bg, Color fg) {
     return Container(
@@ -290,23 +414,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           color: fg,
         ),
       ),
-    );
-  }
-
-  Widget _metaRow(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Row(
-      children: [
-        _meta(Icons.star, '${_course.rating}', Colors.orange),
-        const SizedBox(width: 16),
-        _meta(Icons.people_outline,
-            '${(_course.learners / 1000).toStringAsFixed(1)}K', null),
-        const SizedBox(width: 16),
-        _meta(Icons.access_time, '${_course.hours}h', null),
-        const SizedBox(width: 16),
-        _meta(Icons.menu_book_outlined,
-            '${_course.modules.length} modules', null),
-      ],
     );
   }
 
@@ -331,8 +438,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
-  Widget _progressBlock(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _progressBlock(bool isDark, double progress) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -347,22 +453,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.trending_up,
-                size: 18,
-                color: AppTheme.primaryColor,
-              ),
+              const Icon(Icons.trending_up,
+                  size: 18, color: AppTheme.primaryColor),
               const SizedBox(width: 6),
               const Text(
                 'Your Progress',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+                    fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const Spacer(),
               Text(
-                '${(_progress * 100).round()}%',
+                '${(progress * 100).round()}%',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppTheme.primaryColor,
@@ -374,28 +475,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: _progress,
+              value: progress,
               minHeight: 8,
-              backgroundColor: isDark
-                  ? AppTheme.darkBorder
-                  : AppTheme.borderColor,
+              backgroundColor:
+                  isDark ? AppTheme.darkBorder : AppTheme.borderColor,
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppTheme.primaryColor,
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _sectionHeader(String text, Color color) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: color,
       ),
     );
   }
@@ -411,8 +500,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
   }
 }
-
-// ---------------------------------------------------------------------------
 
 class _ModuleRow extends StatelessWidget {
   final int index;
@@ -440,7 +527,7 @@ class _ModuleRow extends StatelessWidget {
       case ModuleStatus.completed:
         icon = Icons.check_circle;
         iconColor = AppTheme.accentColor;
-        iconBg = const Color(0xFFD1FAE5);
+        iconBg = const Color(0xFFFFE8D0);
         break;
       case ModuleStatus.inProgress:
         icon = Icons.play_circle_fill;
@@ -450,9 +537,8 @@ class _ModuleRow extends StatelessWidget {
       case ModuleStatus.locked:
         icon = Icons.lock;
         iconColor = AppTheme.secondaryTextColor;
-        iconBg = isDark
-            ? AppTheme.darkBorder
-            : const Color(0xFFF1F5F9);
+        iconBg =
+            isDark ? AppTheme.darkBorder : const Color(0xFFF1F5F9);
         break;
     }
 
@@ -492,7 +578,9 @@ class _ModuleRow extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
-                        color: locked ? AppTheme.secondaryTextColor : textColor,
+                        color: locked
+                            ? AppTheme.secondaryTextColor
+                            : textColor,
                       ),
                     ),
                     const SizedBox(height: 4),

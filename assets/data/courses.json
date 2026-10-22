@@ -1,0 +1,159 @@
+{
+  "courses": [
+    {
+      "id": "flutter-dev",
+      "title": "Flutter Development",
+      "description": "Learn to build beautiful, cross-platform mobile apps with Flutter and Dart. From widgets to state management, this course walks you through everything you need to ship real apps.",
+      "category": "Programming",
+      "level": "Beginner",
+      "rating": 4.8,
+      "learners": 12000,
+      "hours": 6,
+      "icon": "flutter_dash",
+      "color": "#C9DEFF",
+      "outcomes": [
+        "Build responsive mobile UIs with widgets",
+        "Understand state management patterns",
+        "Integrate APIs and handle async data",
+        "Ship a complete Flutter app"
+      ],
+      "modules": [
+        {"id": "fd-1", "title": "UI Layouts & Widgets", "duration": "12 min", "status": "completed"},
+        {"id": "fd-2", "title": "State Management", "duration": "18 min", "status": "inProgress"},
+        {"id": "fd-3", "title": "API Integration", "duration": "15 min", "status": "locked"},
+        {"id": "fd-4", "title": "Navigation & Routing", "duration": "10 min", "status": "locked"},
+        {"id": "fd-5", "title": "Local Storage", "duration": "14 min", "status": "locked"},
+        {"id": "fd-6", "title": "Publishing Your App", "duration": "9 min", "status": "locked"}
+      ]
+    },
+    {
+      "id": "python-prog",
+      "title": "Python Programming",
+      "description": "Start coding with Python from the basics to advanced topics. Covers syntax, data structures, OOP, and practical scripting for real-world tasks.",
+      "category": "Programming",
+      "level": "Beginner",
+      "rating": 4.7,
+      "learners": 15000,
+      "hours": 8,
+      "icon": "code",
+      "color": "#FFE9BE",
+      "outcomes": [
+        "Write clean Python code",
+        "Use lists, dicts, and sets effectively",
+        "Understand functions and OOP",
+        "Automate tasks with scripts"
+      ],
+      "modules": [
+        {"id": "py-1", "title": "Python Basics", "duration": "15 min", "status": "completed"},
+        {"id": "py-2", "title": "Data Structures", "duration": "20 min", "status": "locked"},
+        {"id": "py-3", "title": "Functions & Modules", "duration": "18 min", "status": "locked"},
+        {"id": "py-4", "title": "Object-Oriented Python", "duration": "22 min", "status": "locked"},
+        {"id": "py-5", "title": "File I/O & Scripting", "duration": "16 min", "status": "locked"}
+      ]
+    },
+    {
+      "id": "networking-basics",
+      "title": "Networking Basics",
+      "description": "Understand how computer networks work. Covers IP addressing, protocols, routing, and hands-on network troubleshooting.",
+      "category": "Networking",
+      "level": "Intermediate",
+      "rating": 4.6,
+      "learners": 8500,
+      "hours": 5,
+      "icon": "router",
+      "color": "#C9F8DD",
+      "outcomes": [
+        "Understand IP, TCP, and UDP",
+        "Configure basic networks",
+        "Troubleshoot connection issues",
+        "Read network diagrams"
+      ],
+      "modules": [
+        {"id": "nw-1", "title": "Intro to Networks", "duration": "12 min", "status": "completed"},
+        {"id": "nw-2", "title": "IP Addressing", "duration": "18 min", "status": "completed"},
+        {"id": "nw-3", "title": "Routing & Switching", "duration": "20 min", "status": "inProgress"},
+        {"id": "nw-4", "title": "Protocols Deep Dive", "duration": "16 min", "status": "locked"},
+        {"id": "nw-5", "title": "Network Troubleshooting", "duration": "14 min", "status": "locked"}
+      ]
+    },
+    {
+      "id": "electronics-basics",
+      "title": "Electronics Basics",
+      "description": "Explore the fundamentals of electronics — components, circuits, and how current flows. Great starting point for hardware tinkerers.",
+      "category": "Electronics",
+      "level": "Beginner",
+      "rating": 4.7,
+      "learners": 6200,
+      "hours": 4,
+      "icon": "memory",
+      "color": "#EED5FF",
+      "outcomes": [
+        "Identify common components",
+        "Read circuit diagrams",
+        "Use a multimeter",
+        "Build simple circuits"
+      ],
+      "modules": [
+        {"id": "el-1", "title": "Voltage, Current, Resistance", "duration": "10 min", "status": "locked"},
+        {"id": "el-2", "title": "Common Components", "duration": "14 min", "status": "locked"},
+        {"id": "el-3", "title": "Reading Circuit Diagrams", "duration": "16 min", "status": "locked"},
+        {"id": "el-4", "title": "Your First Circuit", "duration": "18 min", "status": "locked"}
+      ]
+    },
+    {
+      "id": "hardware-skills",
+      "title": "Hardware Skills",
+      "description": "Learn hands-on hardware skills — assembling, repairing, and maintaining computers and devices.",
+      "category": "Hardware Skills",
+      "level": "Intermediate",
+      "rating": 4.5,
+      "learners": 4300,
+      "hours": 5,
+      "icon": "handyman",
+      "color": "#C4F6F1",
+      "outcomes": [
+        "Assemble a PC from parts",
+        "Diagnose hardware issues",
+        "Upgrade components",
+        "Maintain devices safely"
+      ],
+      "modules": [
+        {"id": "hw-1", "title": "Tools & Safety", "duration": "10 min", "status": "locked"},
+        {"id": "hw-2", "title": "PC Assembly", "duration": "22 min", "status": "locked"},
+        {"id": "hw-3", "title": "Troubleshooting", "duration": "18 min", "status": "locked"},
+        {"id": "hw-4", "title": "Upgrades & Maintenance", "duration": "16 min", "status": "locked"},
+        {"id": "hw-5", "title": "Mobile Device Repair", "duration": "20 min", "status": "locked"}
+      ]
+    },
+    {
+      "id": "web-dev",
+      "title": "Web Development",
+      "description": "Build modern web applications with HTML, CSS, and JavaScript. Covers responsive design, DOM manipulation, and modern frameworks.",
+      "category": "Programming",
+      "level": "Advanced",
+      "rating": 4.9,
+      "learners": 21000,
+      "hours": 10,
+      "icon": "laptop_mac",
+      "color": "#FFD3E9",
+      "outcomes": [
+        "Build responsive layouts",
+        "Write clean HTML/CSS/JS",
+        "Use modern frontend tooling",
+        "Deploy production sites"
+      ],
+      "modules": [
+        {"id": "wd-1", "title": "HTML Foundations", "duration": "12 min", "status": "locked"},
+        {"id": "wd-2", "title": "CSS & Layouts", "duration": "18 min", "status": "locked"},
+        {"id": "wd-3", "title": "JavaScript Essentials", "duration": "22 min", "status": "locked"},
+        {"id": "wd-4", "title": "DOM & Events", "duration": "16 min", "status": "locked"},
+        {"id": "wd-5", "title": "Responsive Design", "duration": "14 min", "status": "locked"},
+        {"id": "wd-6", "title": "Intro to Frameworks", "duration": "20 min", "status": "locked"},
+        {"id": "wd-7", "title": "Deployment", "duration": "10 min", "status": "locked"},
+        {"id": "wd-8", "title": "Final Project", "duration": "30 min", "status": "locked"},
+        {"id": "wd-9", "title": "Portfolio & Next Steps", "duration": "12 min", "status": "locked"},
+        {"id": "wd-10", "title": "Wrap-up", "duration": "8 min", "status": "locked"}
+      ]
+    }
+  ]
+}

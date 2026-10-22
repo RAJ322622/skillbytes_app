@@ -604,7 +604,6 @@ class _StreakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppTheme.darkCard : Colors.white;
     final border = isDark ? AppTheme.darkBorder : AppTheme.borderColor;
 
     return Container(

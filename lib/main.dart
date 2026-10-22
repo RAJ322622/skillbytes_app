@@ -24,10 +24,10 @@ class SkillBytesApp extends StatelessWidget {
         final name = settings.name ?? '/';
 
         // /course/:id
-        if (name.startsWith('/course/')) {
+       if (name.startsWith('/course/')) {
           final id = name.substring('/course/'.length);
           return MaterialPageRoute(
-            builder: (_) => CourseDetailsScreen(courseId: id),
+            builder: (_) => ProgramDetailsScreen(courseId: id),   // ✅ new name
           );
         }
 

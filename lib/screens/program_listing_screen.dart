@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_shell.dart';
 import '../state/course_filter.dart';
+import '../data/course_repository.dart';
+import '../models/course.dart';
 
 class ProgramListingScreen extends StatefulWidget {
   final ValueChanged<int> onTabChange;
@@ -19,80 +21,7 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
   String _category = 'All';
   String _sort = 'Popular';
 
-  final List<Map<String, dynamic>> courses = [
-    {
-      'title': 'Flutter Development',
-      'description':
-          'Learn to build beautiful mobile apps with Flutter.',
-      'category': 'Programming',
-      'level': 'Beginner',
-      'rating': 4.8,
-      'learners': 12000,
-      'hours': 6,
-      'icon': Icons.flutter_dash,
-      'color': const Color(0xFFC9DEFF),
-    },
-    {
-      'title': 'Python Programming',
-      'description':
-          'Start coding with Python from basics to advanced.',
-      'category': 'Programming',
-      'level': 'Beginner',
-      'rating': 4.7,
-      'learners': 15000,
-      'hours': 8,
-      'icon': Icons.code,
-      'color': const Color(0xFFFFE9BE),
-    },
-    {
-      'title': 'Networking Basics',
-      'description':
-          'Understand computer networks, IP, and protocols.',
-      'category': 'Networking',
-      'level': 'Intermediate',
-      'rating': 4.6,
-      'learners': 8500,
-      'hours': 5,
-      'icon': Icons.router,
-      'color': const Color(0xFFC9F8DD),
-    },
-    {
-      'title': 'Electronics Basics',
-      'description':
-          'Explore basic electronics components and circuits.',
-      'category': 'Electronics',
-      'level': 'Beginner',
-      'rating': 4.7,
-      'learners': 6200,
-      'hours': 4,
-      'icon': Icons.memory,
-      'color': const Color(0xFFEED5FF),
-    },
-    {
-      'title': 'Hardware Skills',
-      'description':
-          'Learn about hardware tools, devices, and maintenance.',
-      'category': 'Hardware Skills',
-      'level': 'Intermediate',
-      'rating': 4.5,
-      'learners': 4300,
-      'hours': 5,
-      'icon': Icons.handyman,
-      'color': const Color(0xFFC4F6F1),
-    },
-    {
-      'title': 'Web Development',
-      'description':
-          'Build modern web applications using HTML, CSS and JS.',
-      'category': 'Programming',
-      'level': 'Advanced',
-      'rating': 4.9,
-      'learners': 21000,
-      'hours': 10,
-      'icon': Icons.laptop_mac,
-      'color': const Color(0xFFFFD3E9),
-    },
-  ];
+  late Future<List<Course>> _coursesFuture;
 
   final List<String> categories = [
     'All',
@@ -106,12 +35,12 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
   @override
   void initState() {
     super.initState();
+    _coursesFuture = CourseRepository.instance.fetchCourses();
 
     final initial = CourseFilter.category.value;
     if (initial != null && categories.contains(initial)) {
       _category = initial;
     }
-
     CourseFilter.category.addListener(_onExternalFilter);
   }
 
@@ -131,66 +60,37 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     super.dispose();
   }
 
-  double _num(dynamic value) {
-    if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0;
-    return 0;
-  }
-
-  List<Map<String, dynamic>> get filteredCourses {
-    final result = courses.where((course) {
-      final title = (course['title'] as String).toLowerCase();
-      final description =
-          (course['description'] as String).toLowerCase();
-      final category = course['category'] as String;
-
+  List<Course> _applyFilters(List<Course> all) {
+    final result = all.where((c) {
       final matchesSearch =
-          title.contains(_search.toLowerCase()) ||
-          description.contains(_search.toLowerCase());
+          c.title.toLowerCase().contains(_search.toLowerCase()) ||
+          c.description.toLowerCase().contains(_search.toLowerCase());
 
       final matchesCategory = _category == 'All' ||
-          category == _category ||
+          c.category == _category ||
           (_category == 'Others' &&
               !categories
-                  .where((c) => c != 'All' && c != 'Others')
-                  .contains(category));
+                  .where((x) => x != 'All' && x != 'Others')
+                  .contains(c.category));
 
       return matchesSearch && matchesCategory;
     }).toList();
 
     if (_sort == 'Rating') {
-      result.sort((a, b) => _num(b['rating']).compareTo(_num(a['rating'])));
+      result.sort((a, b) => b.rating.compareTo(a.rating));
     } else if (_sort == 'Name') {
-      result.sort(
-        (a, b) => (a['title'] as String).compareTo(b['title'] as String),
-      );
+      result.sort((a, b) => a.title.compareTo(b.title));
     } else {
-      result.sort(
-        (a, b) =>
-            _num(b['learners']).compareTo(_num(a['learners'])),
-      );
+      result.sort((a, b) => b.learners.compareTo(a.learners));
     }
 
     return result;
   }
 
-  String _courseIdFromTitle(String title) {
-    switch (title) {
-      case 'Flutter Development':
-        return 'flutter-dev';
-      case 'Python Programming':
-        return 'python-prog';
-      case 'Networking Basics':
-        return 'networking-basics';
-      case 'Electronics Basics':
-        return 'electronics-basics';
-      case 'Web Development':
-        return 'web-dev';
-      case 'Hardware Skills':
-        return 'hardware-skills';
-      default:
-        return 'flutter-dev';
-    }
+  void _retry() {
+    setState(() {
+      _coursesFuture = CourseRepository.instance.fetchCourses();
+    });
   }
 
   @override
@@ -201,75 +101,134 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
         children: [
           _TopBar(
             controller: _searchController,
-            onSearch: (value) => setState(() => _search = value),
+            onSearch: (v) => setState(() => _search = v),
           ),
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final wide = constraints.maxWidth >= 850;
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(wide ? 20 : 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Page title
-                      const Text(
-                        'All Courses',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _CategoryRow(
-                        categories: categories,
-                        selected: _category,
-                        onSelected: (value) =>
-                            setState(() => _category = value),
-                        sort: _sort,
-                        onSort: (value) =>
-                            setState(() => _sort = value),
-                        wide: wide,
-                      ),
-                      const SizedBox(height: 20),
-                      if (filteredCourses.isEmpty)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Text('No courses found.'),
+            child: FutureBuilder<List<Course>>(
+              future: _coursesFuture,
+              builder: (context, snapshot) {
+                // =====================================================
+                // LOADING STATE
+                // TODO(Muhammad): Replace with polished loading UI
+                // =====================================================
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 12),
+                        Text('Loading courses...'),
+                      ],
+                    ),
+                  );
+                }
+
+                // =====================================================
+                // ERROR STATE
+                // TODO(Muhammad): Replace with polished error UI
+                // =====================================================
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 48,
                           ),
-                        )
-                      else
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: filteredCourses.length,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: wide
-                                ? (constraints.maxWidth >= 1250
-                                    ? 3
-                                    : 2)
-                                : 1,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 16,
-                            mainAxisExtent: wide ? 242 : 250,
+                          const SizedBox(height: 12),
+                          const Text('Failed to load courses'),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${snapshot.error}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 12),
                           ),
-                          itemBuilder: (context, index) {
-                            return _CourseCard(
-                              course: filteredCourses[index],
-                              onOpen: () {
-                                final id = _courseIdFromTitle(
-                                    filteredCourses[index]['title']
-                                        as String);
-                                Navigator.pushNamed(
-                                    context, '/course/$id');
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _retry,
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                // =====================================================
+                // SUCCESS STATE
+                // =====================================================
+                final all = snapshot.data ?? [];
+                final filtered = _applyFilters(all);
+
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final wide = constraints.maxWidth >= 850;
+                    return SingleChildScrollView(
+                      padding: EdgeInsets.all(wide ? 20 : 14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'All Courses',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _CategoryRow(
+                            categories: categories,
+                            selected: _category,
+                            onSelected: (v) =>
+                                setState(() => _category = v),
+                            sort: _sort,
+                            onSort: (v) => setState(() => _sort = v),
+                            wide: wide,
+                          ),
+                          const SizedBox(height: 20),
+                          if (filtered.isEmpty)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32),
+                                child: Text('No courses found.'),
+                              ),
+                            )
+                          else
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics:
+                                  const NeverScrollableScrollPhysics(),
+                              itemCount: filtered.length,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: wide
+                                    ? (constraints.maxWidth >= 1250
+                                        ? 3
+                                        : 2)
+                                    : 1,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 16,
+                                mainAxisExtent: wide ? 242 : 250,
+                              ),
+                              itemBuilder: (context, i) {
+                                return _CourseCard(
+                                  course: filtered[i],
+                                  onOpen: () => Navigator.pushNamed(
+                                    context,
+                                    '/course/${filtered[i].id}',
+                                  ),
+                                );
                               },
-                            );
-                          },
-                        ),
-                    ],
-                  ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -289,10 +248,7 @@ class _TopBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onSearch;
 
-  const _TopBar({
-    required this.controller,
-    required this.onSearch,
-  });
+  const _TopBar({required this.controller, required this.onSearch});
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +264,6 @@ class _TopBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Brand logo (mobile)
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Container(
@@ -373,14 +328,14 @@ class _CategoryRow extends StatelessWidget {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: categories.map((category) {
-              final active = selected == category;
+            children: categories.map((c) {
+              final active = selected == c;
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  label: Text(category),
+                  label: Text(c),
                   selected: active,
-                  onSelected: (_) => onSelected(category),
+                  onSelected: (_) => onSelected(c),
                   selectedColor: AppTheme.primaryColor,
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   labelStyle: TextStyle(
@@ -418,8 +373,8 @@ class _CategoryRow extends StatelessWidget {
         DropdownMenuItem(value: 'Rating', child: Text('Sort: Rating')),
         DropdownMenuItem(value: 'Name', child: Text('Sort: Name')),
       ],
-      onChanged: (value) {
-        if (value != null) onSort(value);
+      onChanged: (v) {
+        if (v != null) onSort(v);
       },
     );
   }
@@ -430,7 +385,7 @@ class _CategoryRow extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _CourseCard extends StatelessWidget {
-  final Map<String, dynamic> course;
+  final Course course;
   final VoidCallback onOpen;
 
   const _CourseCard({required this.course, required this.onOpen});
@@ -442,7 +397,7 @@ class _CourseCard extends StatelessWidget {
     final border = isDark ? AppTheme.darkBorder : AppTheme.borderColor;
     final textColor = isDark ? AppTheme.darkText : AppTheme.textColor;
 
-    final level = course['level'] as String;
+    final level = course.level;
     final levelColor = level == 'Beginner'
         ? const Color(0xFFD9E8FF)
         : level == 'Intermediate'
@@ -463,11 +418,11 @@ class _CourseCard extends StatelessWidget {
             child: Container(
               height: double.infinity,
               decoration: BoxDecoration(
-                color: course['color'] as Color,
+                color: course.color,
                 borderRadius: BorderRadius.circular(AppTheme.radiusSm),
               ),
               child: Icon(
-                course['icon'] as IconData,
+                course.icon,
                 size: 56,
                 color: AppTheme.primaryColor,
               ),
@@ -497,7 +452,7 @@ class _CourseCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  course['title'] as String,
+                  course.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -509,7 +464,7 @@ class _CourseCard extends StatelessWidget {
                 const SizedBox(height: 5),
                 Expanded(
                   child: Text(
-                    course['description'] as String,
+                    course.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -523,13 +478,13 @@ class _CourseCard extends StatelessWidget {
                     const Icon(Icons.star, size: 16, color: Colors.orange),
                     const SizedBox(width: 3),
                     Text(
-                      '${course['rating']}',
+                      '${course.rating}',
                       style: const TextStyle(fontSize: 12),
                     ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        '${((course['learners'] as int) / 1000).toStringAsFixed(1)}K',
+                        '${(course.learners / 1000).toStringAsFixed(1)}K',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 11),
                       ),
@@ -547,7 +502,7 @@ class _CourseCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        '${course['hours']}h',
+                        '${course.hours}h',
                         style: const TextStyle(fontSize: 12),
                       ),
                     ),
