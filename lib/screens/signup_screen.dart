@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -17,9 +18,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
-
-  static const Color navy = Color(0xFF101529);
-  static const Color pink = Color(0xFFE50983);
 
   @override
   void dispose() {
@@ -55,12 +53,6 @@ class _SignupScreenState extends State<SignupScreen> {
       labelText: label,
       prefixIcon: icon == null ? null : Icon(icon),
       suffixIcon: suffix,
-      filled: true,
-      fillColor: const Color(0xFF202A3D),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
-      ),
       errorMaxLines: 2,
     );
   }
@@ -82,12 +74,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: navy,
       appBar: AppBar(
-        backgroundColor: navy,
-        foregroundColor: Colors.white,
-        elevation: 0,
         title: const Text('Create Account'),
       ),
       body: SafeArea(
@@ -101,32 +91,30 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(
-                      Icons.school_rounded,
-                      color: pink,
-                      size: 64,
-                    ),
+                    Image.asset(
+                        'assets/images/logo.png',
+                        width: 84,
+                        height: 84,
+                        fit: BoxFit.contain,
+                      ),
                     const SizedBox(height: 12),
-                    const Text(
+
+                    Text(
                       'Join SkillBytes',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: theme.textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+
+                    Text(
                       'Learn skills in small chunks',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70),
+                      style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 32),
 
                     TextFormField(
                       controller: _nameController,
-                      style: const TextStyle(color: Colors.white),
                       textCapitalization: TextCapitalization.words,
                       decoration: _decoration(
                         'Full name',
@@ -143,7 +131,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     TextFormField(
                       controller: _emailController,
-                      style: const TextStyle(color: Colors.white),
                       keyboardType: TextInputType.emailAddress,
                       decoration: _decoration(
                         'Email address',
@@ -155,7 +142,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     TextFormField(
                       controller: _passwordController,
-                      style: const TextStyle(color: Colors.white),
                       obscureText: _hidePassword,
                       decoration: _decoration(
                         'Password',
@@ -170,7 +156,6 @@ class _SignupScreenState extends State<SignupScreen> {
                             _hidePassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
-                            color: Colors.white70,
                           ),
                         ),
                       ),
@@ -188,7 +173,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     TextFormField(
                       controller: _confirmPasswordController,
-                      style: const TextStyle(color: Colors.white),
                       obscureText: _hideConfirmPassword,
                       decoration: _decoration(
                         'Confirm password',
@@ -204,7 +188,6 @@ class _SignupScreenState extends State<SignupScreen> {
                             _hideConfirmPassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
-                            color: Colors.white70,
                           ),
                         ),
                       ),
@@ -224,20 +207,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       height: 52,
                       child: ElevatedButton(
                         onPressed: _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: pink,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          'Create Account',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: const Text('Create Account'),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -246,7 +216,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       onPressed: () => Navigator.pop(context),
                       child: const Text(
                         'Already have an account? Back to Login',
-                        style: TextStyle(color: pink),
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                        ),
                       ),
                     ),
                   ],
