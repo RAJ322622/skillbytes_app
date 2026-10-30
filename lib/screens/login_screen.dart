@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../theme/app_theme.dart';
+import '../services/admin_service.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -27,15 +30,105 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // UPDATED: Firebase login with separate admin verification.
   Future<void> _mockLogin() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _loading = false);
-    Navigator.pushReplacementNamed(context, '/home');
+
+    try {
+      // EXISTING: Authenticate using Firebase Authentication.
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      // UPDATED: Check admin status separately.
+      bool isAdmin = false;
+      bool adminCheckFailed = false;
+
+      try {
+        isAdmin = await AdminService().isCurrentUserAdmin();
+      } on FirebaseException catch (e) {
+        adminCheckFailed = true;
+        debugPrint(
+          'Admin verification failed: ${e.code} - ${e.message}',
+        );
+      } catch (e) {
+        adminCheckFailed = true;
+        debugPrint('Admin verification failed: $e');
+      }
+
+      if (!mounted) return;
+
+      // ADDED: Do not redirect when admin status cannot be verified.
+      if (adminCheckFailed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Login successful, but account access could not be '
+              'verified. Please check Firestore permissions.',
+            ),
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
+      // UPDATED: Navigate according to the verified account role.
+      if (isAdmin) {
+        Navigator.pushReplacementNamed(context, '/admin');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      // EXISTING: Firebase authentication error handling.
+      String message;
+
+      switch (e.code) {
+        case 'invalid-credential':
+        case 'user-not-found':
+        case 'wrong-password':
+          message = 'Invalid email or password.';
+          break;
+        case 'invalid-email':
+          message = 'Please enter a valid email address.';
+          break;
+        case 'too-many-requests':
+          message = 'Too many attempts. Please try again later.';
+          break;
+        case 'network-request-failed':
+          message = 'Please check your internet connection.';
+          break;
+        case 'operation-not-allowed':
+          message =
+              'Email/password sign-in is not enabled in Firebase.';
+          break;
+        default:
+          message = e.message ?? 'Login failed. Please try again.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
   }
 
+  // EXISTING: Social login placeholder.
   void _stub(String label) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$label coming soon')),
@@ -49,13 +142,17 @@ class _LoginScreenState extends State<LoginScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final wide = constraints.maxWidth >= 850;
-            return wide ? _buildWide(context) : _buildMobile(context);
+
+            return wide
+                ? _buildWide(context)
+                : _buildMobile(context);
           },
         ),
       ),
     );
   }
 
+  // EXISTING: Mobile login layout.
   Widget _buildMobile(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -75,16 +172,22 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // EXISTING: Desktop/wide login layout.
   Widget _buildWide(BuildContext context) {
     return Row(
       children: [
-        Expanded(flex: 5, child: _buildBrandPanel(context)),
+        Expanded(
+          flex: 5,
+          child: _buildBrandPanel(context),
+        ),
         Expanded(
           flex: 4,
           child: Center(
             child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 48,
+                vertical: 32,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(
@@ -95,7 +198,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 6),
-                    const Text('Log in to continue your learning journey'),
+                    const Text(
+                      'Log in to continue your learning journey',
+                    ),
                     const SizedBox(height: 28),
                     _buildForm(context),
                     const SizedBox(height: 24),
@@ -112,6 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // EXISTING: Brand panel.
   Widget _buildBrandPanel(BuildContext context) {
     return Container(
       color: AppTheme.primaryColor,
@@ -167,6 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // EXISTING: Login form.
   Widget _buildForm(BuildContext context) {
     return Form(
       key: _formKey,
@@ -200,8 +307,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                 ),
-                onPressed: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                onPressed: () => setState(
+                  () => _obscurePassword = !_obscurePassword,
+                ),
               ),
             ),
             validator: (value) {
@@ -222,8 +330,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Checkbox(
                     value: _rememberMe,
-                    onChanged: (v) =>
-                        setState(() => _rememberMe = v ?? false),
+                    onChanged: (value) {
+                      setState(() {
+                        _rememberMe = value ?? false;
+                      });
+                    },
                     materialTapTargetSize:
                         MaterialTapTargetSize.shrinkWrap,
                     visualDensity: VisualDensity.compact,
@@ -259,6 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
           SizedBox(
             height: 52,
             child: ElevatedButton(
+              // EXISTING: Loading indicator and button preserved.
               onPressed: _loading ? null : _mockLogin,
               child: _loading
                   ? const SizedBox(
@@ -278,8 +390,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // EXISTING: Social sign-in placeholders.
   Widget _buildSocialRow(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
+
     final dividerColor =
         isDark ? AppTheme.darkBorder : AppTheme.borderColor;
 
@@ -322,6 +437,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // EXISTING: Signup navigation.
   Widget _buildSignUpPrompt(BuildContext context) {
     return Center(
       child: Wrap(
@@ -349,15 +465,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-
+// EXISTING: Brand header.
 class _BrandHeader extends StatelessWidget {
   const _BrandHeader();
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? AppTheme.darkText : AppTheme.textColor;
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
+
+    final textColor =
+        isDark ? AppTheme.darkText : AppTheme.textColor;
 
     return Column(
       children: [

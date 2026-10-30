@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "996071343086",
+    "project_id": "skiilbytes-app",
+    "storage_bucket": "skiilbytes-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:996071343086:android:34cc535e2aab37c52784ff",
+        "android_client_info": {
+          "package_name": "com.example.skillbytes_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpwLyFeNNH6qeconRI2Hx1mwbUtjnsCC0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

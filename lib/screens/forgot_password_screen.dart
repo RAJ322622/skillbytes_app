@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ADDED: Firebase Authentication
 import '../theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -14,6 +15,8 @@ class _ForgotPasswordScreenState
     extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -37,18 +40,83 @@ class _ForgotPasswordScreenState
     return null;
   }
 
-  void _submitForm() {
+  // UPDATED: Send an actual Firebase password-reset email.
+  Future<void> _submitForm() async {
     FocusScope.of(context).unfocus();
 
-    if (_formKey.currentState!.validate()) {
+    if (_isSubmitting) return;
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // ADDED: Send password-reset email through Firebase.
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailController.text.trim(),
+      );
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Email validated. Connect an authentication service '
-            'to send a password reset email.',
+            'Password reset link sent. Please check your email.',
+          ),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      // ADDED: Handle Firebase password-reset errors.
+      String message;
+
+      switch (e.code) {
+        case 'invalid-email':
+          message = 'Please enter a valid email address.';
+          break;
+        case 'user-not-found':
+          message = 'No account found with this email address.';
+          break;
+        case 'too-many-requests':
+          message = 'Too many attempts. Please try again later.';
+          break;
+        case 'network-request-failed':
+          message = 'Please check your internet connection.';
+          break;
+        case 'operation-not-allowed':
+          message =
+              'Email/password authentication is not enabled in Firebase.';
+          break;
+        default:
+          message = e.message ??
+              'Unable to send reset email. Please try again.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Something went wrong. Please try again.',
           ),
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -72,11 +140,11 @@ class _ForgotPasswordScreenState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Image.asset(
-                        'assets/images/logo.png',
-                        width: 84,
-                        height: 84,
-                        fit: BoxFit.contain,
-                      ),
+                      'assets/images/logo.png',
+                      width: 84,
+                      height: 84,
+                      fit: BoxFit.contain,
+                    ),
                     const SizedBox(height: 24),
 
                     Text(
@@ -98,6 +166,7 @@ class _ForgotPasswordScreenState
 
                     TextFormField(
                       controller: _emailController,
+                      enabled: !_isSubmitting,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'Email address',
@@ -110,14 +179,26 @@ class _ForgotPasswordScreenState
                     SizedBox(
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: _submitForm,
-                        child: const Text('Submit'),
+                        onPressed: _isSubmitting
+                            ? null
+                            : _submitForm,
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Submit'),
                       ),
                     ),
                     const SizedBox(height: 16),
 
                     TextButton.icon(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
                       label: const Text('Back to Login'),
                       style: TextButton.styleFrom(
