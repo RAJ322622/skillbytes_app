@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_shell.dart';
 import '../state/course_filter.dart';
+import '../data/course_repository.dart';
+import '../models/course.dart';
 
 class HomeScreen extends StatefulWidget {
   final ValueChanged<int> onTabChange;
@@ -16,6 +18,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _searchFocus = FocusNode();
   String _searchQuery = '';
   bool _showResults = false;
+
+  late Future<List<Course>> _coursesFuture;
 
   static const _categories = [
     {
@@ -44,51 +48,10 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  static const _allCourses = [
-    {
-      'title': 'Flutter Development',
-      'subtitle': 'Beginner • 6 modules',
-      'icon': Icons.flutter_dash,
-      'color': Color(0xFFC9DEFF),
-    },
-    {
-      'title': 'Python Programming',
-      'subtitle': 'Beginner • 8 modules',
-      'icon': Icons.code,
-      'color': Color(0xFFFFE9BE),
-    },
-    {
-      'title': 'Networking Basics',
-      'subtitle': 'Intermediate • 5 modules',
-      'icon': Icons.router,
-      'color': Color(0xFFC9F8DD),
-    },
-    {
-      'title': 'Electronics Basics',
-      'subtitle': 'Beginner • 4 modules',
-      'icon': Icons.memory,
-      'color': Color(0xFFEED5FF),
-    },
-    {
-      'title': 'Web Development',
-      'subtitle': 'Advanced • 10 modules',
-      'icon': Icons.laptop_mac,
-      'color': Color(0xFFFFD3E9),
-    },
-    {
-      'title': 'Hardware Skills',
-      'subtitle': 'Intermediate • 5 modules',
-      'icon': Icons.handyman,
-      'color': Color(0xFFC4F6F1),
-    },
-  ];
-
-  List<Map<String, Object>> get _searchResults {
-    if (_searchQuery.trim().isEmpty) return [];
-    final q = _searchQuery.toLowerCase();
-    return _allCourses
-        .where((c) => (c['title'] as String).toLowerCase().contains(q))
-        .toList();
+  @override
+  void initState() {
+    super.initState();
+    _coursesFuture = CourseRepository.instance.fetchCourses();
   }
 
   @override
@@ -98,33 +61,32 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  /// Filter courses by search query.
+  List<Course> _searchResults(List<Course> all) {
+    if (_searchQuery.trim().isEmpty) return [];
+    final q = _searchQuery.toLowerCase();
+    return all
+        .where((c) => c.title.toLowerCase().contains(q))
+        .toList();
+  }
+
   void _openCategory(BuildContext context, String filter) {
     CourseFilter.category.value = filter;
     widget.onTabChange(1);
   }
 
-  String _courseIdFromTitle(String title) {
-    switch (title) {
-      case 'Flutter Development':
-        return 'flutter-dev';
-      case 'Python Programming':
-        return 'python-prog';
-      case 'Networking Basics':
-        return 'networking-basics';
-      case 'Electronics Basics':
-        return 'electronics-basics';
-      case 'Web Development':
-        return 'web-dev';
-      case 'Hardware Skills':
-        return 'hardware-skills';
-      default:
-        return 'flutter-dev';
-    }
+  void _openCourse(BuildContext context, String courseId) {
+    Navigator.pushNamed(context, '/course/$courseId');
   }
 
-  void _openCourse(BuildContext context, String title) {
-    final id = _courseIdFromTitle(title);
-    Navigator.pushNamed(context, '/course/$id');
+  /// Pull-to-refresh: clears the cache and re-fetches from Firestore.
+  Future<void> _refreshHome() async {
+    CourseRepository.instance.clearCache();
+    final future = CourseRepository.instance.fetchCourses();
+    setState(() {
+      _coursesFuture = future;
+    });
+    await future;
   }
 
   void _showNotifications(BuildContext context) {
@@ -145,91 +107,186 @@ class _HomeScreenState extends State<HomeScreen> {
       currentTab: AppTab.home,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _GreetingHeader(
-                onNotifications: () => _showNotifications(context),
-                onAvatar: () => widget.onTabChange(2),
-              ),
-              const SizedBox(height: 18),
-              _SearchBar(
-                controller: _searchController,
-                focusNode: _searchFocus,
-                onChanged: (value) => setState(() {
-                  _searchQuery = value;
-                  _showResults = value.trim().isNotEmpty;
-                }),
-                onClear: () => setState(() {
-                  _searchController.clear();
-                  _searchQuery = '';
-                  _showResults = false;
-                }),
-              ),
-              if (_showResults) ...[
-                const SizedBox(height: 8),
-                _SearchResults(
-                  results: _searchResults,
-                  onTap: (title) => _openCourse(context, title),
-                ),
-              ],
-              if (!_showResults) ...[
-                const SizedBox(height: 16),
-                _LearningBanner(
-                  onBrowse: () {
-                    CourseFilter.category.value = null;
-                    widget.onTabChange(1);
+        child: RefreshIndicator(
+          onRefresh: _refreshHome,
+          child: FutureBuilder<List<Course>>(
+            future: _coursesFuture,
+            builder: (context, snapshot) {
+              // LOADING (initial fetch only)
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return const _HomeLoading();
+              }
+
+              // ERROR
+              if (snapshot.hasError) {
+                return _HomeError(
+                  onRetry: () {
+                    setState(() {
+                      _coursesFuture =
+                          CourseRepository.instance.fetchCourses();
+                    });
                   },
-                ),
-                const SizedBox(height: 20),
-                _ContinueLearningCard(
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/course/flutter-dev'),
-                ),
-                const SizedBox(height: 20),
-                const _StreakCard(),
-                const SizedBox(height: 22),
-                _SectionHeader(
-                  title: 'Explore Categories',
-                  actionLabel: 'See all',
-                  onAction: () {
-                    CourseFilter.category.value = null;
-                    widget.onTabChange(1);
-                  },
-                ),
-                const SizedBox(height: 12),
-                _CategoryGrid(
-                  items: _categories,
-                  onTap: (filter) => _openCategory(context, filter),
-                ),
-                const SizedBox(height: 22),
-                _SectionHeader(
-                  title: 'Recommended',
-                  actionLabel: 'See all',
-                  onAction: () {
-                    CourseFilter.category.value = null;
-                    widget.onTabChange(1);
-                  },
-                ),
-                const SizedBox(height: 12),
-                ..._allCourses.take(3).map(
-                      (c) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _RecommendedTile(
-                          data: c,
-                          onTap: () =>
-                              _openCourse(context, c['title'] as String),
-                        ),
-                      ),
+                );
+              }
+
+              // SUCCESS
+              final allCourses = snapshot.data ?? [];
+              final searchResults = _searchResults(allCourses);
+              final recommended = allCourses.take(3).toList();
+              final continueCourse = allCourses.isNotEmpty
+                  ? allCourses.first
+                  : null;
+
+              return SingleChildScrollView(
+                // AlwaysScrollable so pull gesture works even if content is short
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _GreetingHeader(
+                      onNotifications: () => _showNotifications(context),
+                      onAvatar: () => widget.onTabChange(2),
                     ),
-              ],
-            ],
+                    const SizedBox(height: 18),
+                    _SearchBar(
+                      controller: _searchController,
+                      focusNode: _searchFocus,
+                      onChanged: (value) => setState(() {
+                        _searchQuery = value;
+                        _showResults = value.trim().isNotEmpty;
+                      }),
+                      onClear: () => setState(() {
+                        _searchController.clear();
+                        _searchQuery = '';
+                        _showResults = false;
+                      }),
+                    ),
+                    if (_showResults) ...[
+                      const SizedBox(height: 8),
+                      _SearchResults(
+                        results: searchResults,
+                        onTap: (course) =>
+                            _openCourse(context, course.id),
+                      ),
+                    ],
+                    if (!_showResults) ...[
+                      const SizedBox(height: 16),
+                      _LearningBanner(
+                        onBrowse: () {
+                          CourseFilter.category.value = null;
+                          widget.onTabChange(1);
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      _ContinueLearningCard(
+                        course: continueCourse,
+                        onTap: () {
+                          if (continueCourse != null) {
+                            _openCourse(context, continueCourse.id);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      const _StreakCard(),
+                      const SizedBox(height: 22),
+                      _SectionHeader(
+                        title: 'Explore Categories',
+                        actionLabel: 'See all',
+                        onAction: () {
+                          CourseFilter.category.value = null;
+                          widget.onTabChange(1);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _CategoryGrid(
+                        items: _categories,
+                        onTap: (filter) => _openCategory(context, filter),
+                      ),
+                      const SizedBox(height: 22),
+                      _SectionHeader(
+                        title: 'Recommended',
+                        actionLabel: 'See all',
+                        onAction: () {
+                          CourseFilter.category.value = null;
+                          widget.onTabChange(1);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      if (recommended.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: Text('No courses available yet'),
+                          ),
+                        )
+                      else
+                        ...recommended.map(
+                          (c) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _RecommendedTile(
+                              course: c,
+                              onTap: () => _openCourse(context, c.id),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
       onTabSelected: (tab) => widget.onTabChange(tab.index),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loading & Error (inside RefreshIndicator so gesture still works)
+// ---------------------------------------------------------------------------
+
+class _HomeLoading extends StatelessWidget {
+  const _HomeLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: const [
+        SizedBox(height: 200),
+        Center(child: CircularProgressIndicator()),
+        SizedBox(height: 12),
+        Center(child: Text('Loading your dashboard...')),
+      ],
+    );
+  }
+}
+
+class _HomeError extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _HomeError({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(24),
+      children: [
+        const SizedBox(height: 120),
+        const Icon(Icons.error_outline, color: Colors.red, size: 48),
+        const SizedBox(height: 12),
+        const Center(child: Text('Failed to load dashboard')),
+        const SizedBox(height: 16),
+        Center(
+          child: ElevatedButton(
+            onPressed: onRetry,
+            child: const Text('Retry'),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -327,8 +384,8 @@ class _SearchBar extends StatelessWidget {
 }
 
 class _SearchResults extends StatelessWidget {
-  final List<Map<String, Object>> results;
-  final ValueChanged<String> onTap;
+  final List<Course> results;
+  final ValueChanged<Course> onTap;
 
   const _SearchResults({required this.results, required this.onTap});
 
@@ -373,30 +430,31 @@ class _SearchResults extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: results[i]['color'] as Color,
+                    color: results[i].color,
                     borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                   ),
                   child: Icon(
-                    results[i]['icon'] as IconData,
+                    results[i].icon,
                     color: AppTheme.primaryColor,
                     size: 20,
                   ),
                 ),
                 title: Text(
-                  results[i]['title'] as String,
+                  results[i].title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
                 subtitle: Text(
-                  results[i]['subtitle'] as String,
+                  '${results[i].level} • ${results[i].modules.length} modules',
                   style: const TextStyle(fontSize: 12),
                 ),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => onTap(results[i]['title'] as String),
+                onTap: () => onTap(results[i]),
               ),
-              if (i != results.length - 1) Divider(height: 1, color: border),
+              if (i != results.length - 1)
+                Divider(height: 1, color: border),
             ],
           ],
         ),
@@ -406,7 +464,7 @@ class _SearchResults extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Learning Banner (moved from listing screen)
+// Learning Banner
 // ---------------------------------------------------------------------------
 
 class _LearningBanner extends StatelessWidget {
@@ -425,14 +483,8 @@ class _LearningBanner extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? const [
-                  Color(0xFF7A0F4D), // dark berry
-                  Color(0xFF9A3A18), // dark orange
-                ]
-              : const [
-                  Color(0xFFB31974), // berry
-                  Color(0xFFF26522), // bright orange
-                ],
+              ? const [Color(0xFF7A0F4D), Color(0xFF9A3A18)]
+              : const [Color(0xFFB31974), Color(0xFFF26522)],
         ),
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
       ),
@@ -493,10 +545,10 @@ class _LearningBanner extends StatelessWidget {
             height: 80,
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.10), // Almost invisible
+              color: Colors.white.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.20), // Subtle outline
+                color: Colors.white.withValues(alpha: 0.20),
                 width: 1,
               ),
             ),
@@ -516,14 +568,36 @@ class _LearningBanner extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _ContinueLearningCard extends StatelessWidget {
+  final Course? course;
   final VoidCallback onTap;
-  const _ContinueLearningCard({required this.onTap});
+
+  const _ContinueLearningCard({required this.course, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? AppTheme.darkCard : Colors.white;
     final border = isDark ? AppTheme.darkBorder : AppTheme.borderColor;
+
+    // Fallback if no courses loaded
+    if (course == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: border),
+        ),
+        child: const Text('No course in progress'),
+      );
+    }
+
+    final completed = course!.modules
+        .where((m) => m.status == ModuleStatus.completed)
+        .length;
+    final progress = course!.modules.isEmpty
+        ? 0.0
+        : completed / course!.modules.length;
 
     return InkWell(
       onTap: onTap,
@@ -552,21 +626,22 @@ class _ContinueLearningCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Continue Learning',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
-                        'Flutter Development — Module 2 of 6',
-                        style: TextStyle(fontSize: 12),
+                        '${course!.title} — ${completed}/${course!.modules.length} modules',
+                        style: const TextStyle(fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -577,16 +652,20 @@ class _ContinueLearningCard extends StatelessWidget {
             const SizedBox(height: 14),
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: const LinearProgressIndicator(
-                value: 0.34,
+              child: LinearProgressIndicator(
+                value: progress,
                 minHeight: 8,
-                backgroundColor: Color(0xFFE2E8F0),
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                backgroundColor: const Color(0xFFE2E8F0),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppTheme.primaryColor,
+                ),
               ),
             ),
             const SizedBox(height: 8),
-            const Text('34% completed', style: TextStyle(fontSize: 12)),
+            Text(
+              '${(progress * 100).round()}% completed',
+              style: const TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),
@@ -783,10 +862,10 @@ class _CategoryGrid extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _RecommendedTile extends StatelessWidget {
-  final Map<String, Object> data;
+  final Course course;
   final VoidCallback onTap;
 
-  const _RecommendedTile({required this.data, required this.onTap});
+  const _RecommendedTile({required this.course, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -810,11 +889,11 @@ class _RecommendedTile extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: data['color'] as Color,
+                color: course.color,
                 borderRadius: BorderRadius.circular(AppTheme.radiusSm),
               ),
               child: Icon(
-                data['icon'] as IconData,
+                course.icon,
                 color: AppTheme.primaryColor,
               ),
             ),
@@ -824,15 +903,17 @@ class _RecommendedTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    data['title'] as String,
+                    course.title,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    data['subtitle'] as String,
+                    '${course.level} • ${course.modules.length} modules',
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],

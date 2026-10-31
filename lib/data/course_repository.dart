@@ -14,6 +14,7 @@ class CourseRepository {
   /// Simulate network delay so loading indicators are visible.
   static const Duration _delay = Duration(milliseconds: 700);
 
+
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
@@ -74,6 +75,10 @@ class CourseRepository {
     }
   }
 
+  /// Clears the cached course list so the next fetch hits Firestore/JSON fresh.
+  void clearCache() {
+    _cache = null;
+  }
   /// Mark a course as enrolled (unlock first module if still locked).
   void enroll(String courseId) {
     final list = _cache;

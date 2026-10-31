@@ -93,6 +93,16 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
     });
   }
 
+  /// Pull-to-refresh: clears the cache and re-fetches from Firestore/JSON.
+  Future<void> _refreshCourses() async {
+    CourseRepository.instance.clearCache();
+    final future = CourseRepository.instance.fetchCourses();
+    setState(() {
+      _coursesFuture = future;
+    });
+    await future;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppShell(
@@ -165,70 +175,74 @@ class _ProgramListingScreenState extends State<ProgramListingScreen> {
                 final all = snapshot.data ?? [];
                 final filtered = _applyFilters(all);
 
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final wide = constraints.maxWidth >= 850;
-                    return SingleChildScrollView(
-                      padding: EdgeInsets.all(wide ? 20 : 14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'All Courses',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _CategoryRow(
-                            categories: categories,
-                            selected: _category,
-                            onSelected: (v) =>
-                                setState(() => _category = v),
-                            sort: _sort,
-                            onSort: (v) => setState(() => _sort = v),
-                            wide: wide,
-                          ),
-                          const SizedBox(height: 20),
-                          if (filtered.isEmpty)
-                            const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(32),
-                                child: Text('No courses found.'),
+                return RefreshIndicator(
+                  onRefresh: _refreshCourses,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final wide = constraints.maxWidth >= 850;
+                      return SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.all(wide ? 20 : 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'All Courses',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
                               ),
-                            )
-                          else
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics:
-                                  const NeverScrollableScrollPhysics(),
-                              itemCount: filtered.length,
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: wide
-                                    ? (constraints.maxWidth >= 1250
-                                        ? 3
-                                        : 2)
-                                    : 1,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 16,
-                                mainAxisExtent: wide ? 242 : 250,
-                              ),
-                              itemBuilder: (context, i) {
-                                return _CourseCard(
-                                  course: filtered[i],
-                                  onOpen: () => Navigator.pushNamed(
-                                    context,
-                                    '/course/${filtered[i].id}',
-                                  ),
-                                );
-                              },
                             ),
-                        ],
-                      ),
-                    );
-                  },
+                            const SizedBox(height: 16),
+                            _CategoryRow(
+                              categories: categories,
+                              selected: _category,
+                              onSelected: (v) =>
+                                  setState(() => _category = v),
+                              sort: _sort,
+                              onSort: (v) => setState(() => _sort = v),
+                              wide: wide,
+                            ),
+                            const SizedBox(height: 20),
+                            if (filtered.isEmpty)
+                              const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(32),
+                                  child: Text('No courses found.'),
+                                ),
+                              )
+                            else
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics:
+                                    const NeverScrollableScrollPhysics(),
+                                itemCount: filtered.length,
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: wide
+                                      ? (constraints.maxWidth >= 1250
+                                          ? 3
+                                          : 2)
+                                      : 1,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 16,
+                                  mainAxisExtent: wide ? 242 : 250,
+                                ),
+                                itemBuilder: (context, i) {
+                                  return _CourseCard(
+                                    course: filtered[i],
+                                    onOpen: () => Navigator.pushNamed(
+                                      context,
+                                      '/course/${filtered[i].id}',
+                                    ),
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),
