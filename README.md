@@ -13,6 +13,8 @@
 
 <p align="center">
   🚀 <a href="https://skillbytes-app.onrender.com/"><b>Live Web Demo</b></a>
+  &nbsp;|&nbsp;
+  🎬 <a href="https://youtu.be/oaPofr0cAYY"><b>Watch Demo Video</b></a>
 </p>
 
 ---
