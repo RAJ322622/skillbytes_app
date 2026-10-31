@@ -300,8 +300,8 @@ skillbytes_app/
 
 **Contributions:**
 - **Philip Gbafa:** Connected Home to Firestore, pull-to-refresh on Home and Course Listing, finalized brand palette, wrote Week 4 README, recorded demo video
-- **Muhammad Huzaifa Sajjad:** Firebase integration (Auth + Firestore), full admin dashboard, admin course/learner/feedback screens, `AdminService`
-- **Rajkumar A:** Form UI refinements and validation polish
+- **Rajkumar A:** Firebase integration (Auth + Firestore), full admin dashboard, admin course/learner/feedback screens, `AdminService`
+- **Muhammad Huzaifa Sajjad:** Form UI refinements and validation polish
 - **Saanchi Agarwal:** README review and documentation
 - **Shafiya Anam & Sharnice Obeng:** Week 4 documentation
 - **Thembinkosi Bhebe:** Final reviews, submission management, Excelerate upload
