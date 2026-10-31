@@ -155,28 +155,28 @@ flutter pub get
 # 3. Run the app
 flutter run
 ```
-Firebase Setup (already committed)
-android/app/google-services.json is included
+### Firebase Setup (already committed)
+- `android/app/google-services.json` is included
+- `lib/firebase_options.dart` is included
 
-lib/firebase_options.dart is included
+### Firestore Collections Required
 
-Firestore Collections Required
-Collection	Purpose	How it's populated
-courses	Course documents	Auto-seeded via Import Starter Courses in Admin
-learners	Registered users	Auto-populated on signup
-admins	Admin users' UIDs	Must be added manually in Firestore console
-feedback	Learner feedback	Auto-populated when a learner submits feedback
-Making a user an Admin
-Sign up in the app with the desired admin email
+| Collection | Purpose | How it's populated |
+|---|---|---|
+| `courses` | Course documents | Auto-seeded via **Import Starter Courses** in Admin |
+| `learners` | Registered users | Auto-populated on signup |
+| `admins` | Admin users' UIDs | Must be added manually in Firestore console |
+| `feedback` | Learner feedback | Auto-populated when a learner submits feedback |
 
-In the Firebase Console, open Firestore → admins
+### Making a user an Admin
+1. Sign up in the app with the desired admin email.
+2. In the Firebase Console, open `Firestore → admins`.
+3. Create a document with the **UID** as the document ID and `{ "role": "admin" }` as the content.
+4. Log out → log in again → the admin dashboard opens automatically.
 
-Create a document with the UID as the document ID and { "role": "admin" } as the content
+## 10. Project Structure
 
-Log out → log in again → the admin dashboard opens automatically
-
-10. Project Structure
-text
+```text
 skillbytes_app/
 ├── android/
 ├── assets/
@@ -208,6 +208,7 @@ skillbytes_app/
 ├── firebase.json
 └── pubspec.yaml
 11. Team Members
+```
 Philip Gbafa – Team Lead
 
 Saanchi Agarwal – Project Lead
