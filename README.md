@@ -2,6 +2,41 @@
 
 **Team-0510 | SLU MAD Team 8**
 
+<p align="center">
+  <img src="assets/images/logo.png" alt="SkillBytes Logo" width="120" />
+</p>
+
+<p align="center">
+  <b>A Flutter mobile app for learning practical tech skills in short, focused modules.</b><br/>
+  Built with Firebase Auth + Firestore, a custom branded UI, and a full admin dashboard.
+</p>
+
+<p align="center">
+  🚀 <a href="https://skillbytes-app.onrender.com/"><b>Live Web Demo</b></a>
+</p>
+
+---
+
+## 📖 Table of Contents
+
+1. [Project Overview](#1-project-overview)
+2. [Problem Statement](#2-problem-statement)
+3. [Project Objectives](#3-project-objectives)
+4. [Target Users](#4-target-users)
+5. [Key Features](#5-key-features)
+6. [Technology Stack](#6-technology-stack)
+7. [Screenshots](#7-screenshots)
+8. [Navigation Flow](#8-navigation-flow)
+9. [Setup Instructions](#9-setup-instructions)
+10. [Project Structure](#10-project-structure)
+11. [Team Members](#11-team-members)
+12. [Week-by-Week Development](#12-week-by-week-development)
+13. [Repository](#13-repository)
+14. [Future Enhancements](#14-future-enhancements)
+15. [Conclusion](#15-conclusion)
+
+---
+
 ## 1. Project Overview
 
 SkillBytes is a mobile application designed to help learners develop practical technology skills through short, structured learning sessions. The platform focuses on making technical education accessible, beginner-friendly, and easy to follow.
@@ -29,148 +64,311 @@ Many learners struggle to develop technical skills because courses can be length
 
 ## 5. Key Features
 
-### Learner Features
-- Login and registration screens
-- Home dashboard
-- Course listing and course details
-- Course enrollment
-- Short lessons and learning modules
-- Learning progress tracking
-- User profile
+### 👤 Learner Features
+- Email/password login and registration (Firebase Auth)
+- Forgot-password reset flow
+- Home dashboard with live data from Firestore
+- Course listing with search, category filters, and sort
+- Course details with modules and enrollment
+- Feedback form with input validation
+- Pull-to-refresh for live data
+- Dark and light theme support
+- Responsive layout (phone, tablet, and web)
 
-### Administrator Features
-- Admin dashboard
-- Add and edit courses
-- Organize modules and lessons
-- View course enrollment information
-
-*These are planned features; implementation will take place in subsequent development phases.*
+### 🛠️ Administrator Features
+- Secure admin-only routes (Firestore role check)
+- Dashboard with live stats (Courses / Learners / Feedback)
+- **Course Management:** create, edit, delete, and import starter courses
+- **Learner Management:** searchable list of registered users
+- **Feedback Management:** filter, search, and update status (New → Reviewed → Resolved)
 
 ## 6. Technology Stack
 
-- **Frontend:** Flutter
-- **Programming Language:** Dart
-- **Version Control:** Git and GitHub
-- **Wireframing:** Figma or Whimsical
-- **Initial Development:** Mock data
-- **Possible Future Backend:** Firebase, subject to team agreement
+- **Frontend:** Flutter (Dart)
+- **Backend:** Firebase Authentication + Cloud Firestore
+- **State Management:** `setState`, `FutureBuilder`, `StreamBuilder`
+- **Fonts:** `google_fonts` (Inter)
+- **Version Control:** Git + GitHub
+- **Wireframing:** Figma / Whimsical
+- **Design:** Custom SkillBytes brand palette (berry, orange, gold)
+- **Deployment:** Render (live web build)
 
-## 7. Navigation Flow
+## 7. Screenshots
+
+### Authentication
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/login.jpg" width="180"/><br/><sub><b>Login</b></sub></td>
+    <td align="center"><img src="screenshots/signup.jpg" width="180"/><br/><sub><b>Sign Up</b></sub></td>
+    <td align="center"><img src="screenshots/reset.jpg" width="180"/><br/><sub><b>Reset Password</b></sub></td>
+  </tr>
+</table>
+
+### Learner Experience
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/home.jpg" width="180"/><br/><sub><b>Home Dashboard</b></sub></td>
+    <td align="center"><img src="screenshots/courses.jpg" width="180"/><br/><sub><b>Course Listing</b></sub></td>
+    <td align="center"><img src="screenshots/course_details.jpg" width="180"/><br/><sub><b>Course Details</b></sub></td>
+    <td align="center"><img src="screenshots/feedback.jpg" width="180"/><br/><sub><b>Feedback Form</b></sub></td>
+  </tr>
+</table>
+
+### Administrator Experience
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/admin_dashboard.jpg" width="180"/><br/><sub><b>Admin Dashboard</b></sub></td>
+    <td align="center"><img src="screenshots/admin_courses.jpg" width="180"/><br/><sub><b>Manage Courses</b></sub></td>
+    <td align="center"><img src="screenshots/admin_learners.jpg" width="180"/><br/><sub><b>Manage Learners</b></sub></td>
+    <td align="center"><img src="screenshots/admin_feedback.jpg" width="180"/><br/><sub><b>Manage Feedback</b></sub></td>
+  </tr>
+</table>
+
+## 8. Navigation Flow
 
 ### Learner
-Login/Sign Up → Home → Course Listing → Course Details → Enroll → Lessons → Progress/Profile
+`Login / Sign Up` → `Home` → `Course Listing` → `Course Details` → `Enroll` → `Modules` → `Profile`
 
 ### Administrator
-Login → Admin Dashboard → Manage Courses → Add/Edit Course → Manage Modules and Lessons
+`Login` → `Admin Dashboard` → `Manage Courses / Learners / Feedback` → `Add / Edit Course`
 
-## 8. Planned Wireframes
+## 9. Setup Instructions
 
-The initial low-fidelity wireframes will cover:
+### Prerequisites
+- Flutter SDK (3.19 or newer)
+- A device, emulator, or Chrome (web)
+- A Firebase project with **Auth** and **Firestore** enabled
 
-1. Login and Sign Up
-2. Home Dashboard
-3. Course Listing
-4. Course Details
+### Steps
 
-These wireframes will illustrate the basic layout, buttons, forms, and navigation before implementation begins.
+```bash
+# 1. Clone the repository
+git clone https://github.com/RAJ322622/skillbytes_app.git
+cd skillbytes_app
 
-## 9. Project Structure
+# 2. Install dependencies
+flutter pub get
 
-```text
+# 3. Run the app
+flutter run
+Firebase Setup (already committed)
+android/app/google-services.json is included
+
+lib/firebase_options.dart is included
+
+Firestore Collections Required
+Collection	Purpose	How it's populated
+courses	Course documents	Auto-seeded via Import Starter Courses in Admin
+learners	Registered users	Auto-populated on signup
+admins	Admin users' UIDs	Must be added manually in Firestore console
+feedback	Learner feedback	Auto-populated when a learner submits feedback
+Making a user an Admin
+Sign up in the app with the desired admin email
+
+In the Firebase Console, open Firestore → admins
+
+Create a document with the UID as the document ID and { "role": "admin" } as the content
+
+Log out → log in again → the admin dashboard opens automatically
+
+10. Project Structure
+text
 skillbytes_app/
 ├── android/
+├── assets/
+│   ├── data/
+│   │   └── courses.json
+│   └── images/
+│       └── logo.png
+├── docs/
 ├── ios/
 ├── lib/
+│   ├── data/
+│   ├── models/
+│   ├── screens/
+│   │   └── admin/
+│   ├── services/
+│   ├── state/
+│   ├── theme/
+│   ├── widgets/
+│   ├── firebase_options.dart
 │   └── main.dart
+├── screenshots/
 ├── test/
 ├── web/
 ├── windows/
 ├── linux/
 ├── macos/
-├── docs/
 ├── wireframes/
 ├── README.md
-├── pubspec.yaml
-└── .gitignore
-```
+├── firebase.json
+└── pubspec.yaml
+11. Team Members
+Philip Gbafa – Team Lead
 
-The `docs/` and `wireframes/` folders will contain the project proposal, user journeys, navigation documentation, and wireframe exports as they are added.
+Saanchi Agarwal – Project Lead
 
-## 10. Team Members
+Rajkumar A – Co Project Lead
 
-- Philip Gbafa – Team Lead
-- Saanchi Agarwal – Project Lead
-- Rajkumar – Co Project Lead
-- Thembinkosi Bhebe – Project Manager
-- Sharnice Obeng – Project Scribe
-- Muhammad Huzaifa Sajjad – Member
-- Shafiya Anam – Member
+Thembinkosi Bhebe – Project Manager
 
-## 11. Week 1 Deliverables
+Sharnice Obeng – Project Scribe
 
-- App proposal document
-- Learner and administrator user journeys
-- Four low-fidelity wireframes
-- GitHub repository with the initial Flutter project
-- Project README and navigation flow
+Muhammad Huzaifa Sajjad – Member
 
-## 12. SkillBytes App - Week 2 Update🚀 What Changed This Week?
-During Week 2, our team transitioned the app from initial wireframes to a fully functional, interactive 4-screen Flutter prototype with seamlessly integrated navigation.
-1. Working UI Prototype
-Core Screens: Built interactive Flutter UI layouts for four core screens—Login Screen, Home Screen, Program Listing Screen, and Program Details Screen.
-Interactive Navigation: Implemented Navigator routing logic to enable smooth user movement across all four screens.
-2. Branding & Theme Consistency
-ThemeData Integration: Applied unified colors, typography, and styled widgets consistent with Excelerate’s brand guidelines.
-3. Documentation & GitHub Repository
-Project Documentation: Updated the README.md with a defined Project Vision and core objectives.
-Visuals & Codebase: Documented repository progress with app walkthrough screenshots and structured commit history.
-💻 Team Contributions
-Philip Gbafa: Built the main Flutter app screens (Login, Home, Job Listing, Job Details) and implemented Navigator logic.
-Muhammad Huzaifa Sajjad & Rajkumar A: Assisted with UI layout design, button styling, and unified ThemeData across all screens.
-Saanchi Agarwal: Authored the Project Vision, Objectives, and updated the GitHub README.md documentation.
-Shafiya Anam: Recorded the demo video walkthrough highlighting design choices and navigation flow.
-Sharnice Obeng: Conducted end-to-end user flow testing and captured clean UI screenshots of all four screens.
-Thembinkosi Bhebe: Created and managed the GitHub repository, formatted the README.md file, and handled final submission pushes.
-🎯 Project Vision & ObjectivesProject Vision
-SkillBytes is designed to bridge the gap between learning and professional growth by providing students with an intuitive, mobile-first gateway to explore programs, hone industry-relevant skills, and unlock career opportunities. By simplifying access to experiential learning opportunities, SkillBytes empowers learners to seamlessly navigate their professional journey with clarity and confidence.
-Objectives
-Seamless Navigation: Deliver a clean, structured, and user-friendly multi-screen interface to make discovering and reviewing programs effortless.
-Consistent Visual Identity: Ensure dynamic design consistency across screens adhering to Excelerate’s brand identity and UI standards.
-Interactive Prototype: Establish a robust Flutter code foundation prepared for real-time dynamic data integration and interactive features in upcoming iterations.
+Shafiya Anam – Member
 
-# 13. SkillBytes App - Week 3 Update
+12. Week-by-Week Development
+📅 Week 1 — Planning & Wireframes
+Delivered:
 
-## 🚀 What Changed This Week?
-During Week 3, our team transitioned the app from static hardcoded UI screens to a fully functional, interactive, and data-driven Flutter application.
+App proposal document
 
+Learner and administrator user journeys
 
-### 1. API & JSON Data Integration
-**Dynamic Content:** Program Listing and Program Details screens now fetch and display real data dynamically from a mock API / sample JSON data source instead of static text.
-### 2. Forms & Validation
-**Interactive Forms:** Implemented a working form (feedback/registration) allowing users to submit input.
-**Input Validation:** Added validation rules ensuring fields cannot be left empty and email inputs adhere to proper formatting requirements.
-### 3. Loading & Error Handling UX
-**Loading States:** Integrated CircularProgressIndicator widgets to provide visual feedback during data fetching.
-**Error Management:** Implemented try/catch error handling blocks with user-friendly error messages to ensure a smooth user experience.
----
-## 💻 Team Contributions
-**Philip Gbafa:** Fetched data from mock API/JSON and integrated Listing & Details screens.
-**Rajkumar A:** Built the form UI (TextFormField) with robust input validation.
-**Muhammad Huzaifa Sajjad:** Implemented reusable loading spinners, user-friendly
-error states, retry actions, and empty-result handling for the data-driven
-program listing and details screens.
-**Saanchi Agarwal:** Updated the GitHub README.md documentation.
-**Shafiya Anam & Sharnice Obeng:** Authored the comprehensive Changelog documenting connected data screens, form functionality, loading spinners, and error handling.
-**Thembinkosi Bhebe:** Conducted final reviews and managed deliverables submission.
+Four low-fidelity wireframes (Login, Home, Course Listing, Course Details)
 
-## 14. Repository
+Initial Flutter project scaffolded
 
+Project README with navigation flow
+
+Contributions:
+
+Philip Gbafa: Wireframes and initial Flutter project
+
+Saanchi Agarwal: Project vision and objectives
+
+Thembinkosi Bhebe: Repository setup and README
+
+Shafiya Anam & Sharnice Obeng: User journey documentation
+
+📅 Week 2 — Working UI Prototype
+Delivered:
+
+Four fully interactive Flutter screens: Login, Home, Program Listing, Program Details
+
+Navigator routing across all four screens
+
+Unified ThemeData — colors, typography, styled widgets
+
+Consistent branding across the app
+
+Contributions:
+
+Philip Gbafa: Built the main Flutter screens and Navigator logic
+
+Muhammad Huzaifa Sajjad & Rajkumar A: UI layout, button styling, ThemeData
+
+Saanchi Agarwal: README documentation updates
+
+Shafiya Anam: Demo walkthrough recording
+
+Sharnice Obeng: End-to-end user flow testing, screenshots
+
+📅 Week 3 — Dynamic Data & Forms
+Delivered:
+
+JSON-backed data layer — Program Listing and Program Details fetch from assets/data/courses.json via CourseRepository
+
+Feedback form — with real field validation (email format, required fields)
+
+Loading states — CircularProgressIndicator with retry support
+
+Error handling — user-friendly messages with retry actions
+
+Shared UI shell — AppShell with bottom nav (mobile) and sidebar (wide)
+
+Custom brand palette — berry, orange, gold, with custom PNG logo
+
+Contributions:
+
+Philip Gbafa: JSON integration, CourseRepository, brand palette, logo
+
+Rajkumar A: Form UI + validation
+
+Muhammad Huzaifa Sajjad: Loading spinners, error states, retry actions, empty-result handling
+
+Saanchi Agarwal: README updates
+
+Shafiya Anam & Sharnice Obeng: Changelog authoring
+
+Thembinkosi Bhebe: Final reviews and submission management
+
+📅 Week 4 — Firebase Backend & Admin Dashboard
+Delivered:
+
+🔥 Firebase Integration
+
+Firebase Authentication — real signup, login, and password reset
+
+Cloud Firestore — courses, learners, and feedback stored and synced in real time
+
+Hybrid data model — the app loads bundled JSON defaults first, then merges Firestore courses on top
+
+🛠️ Admin Dashboard (New)
+
+Role-based access via Firestore admins collection
+
+Live dashboard stats — Courses, Learners, Feedback counts
+
+Course Management: create, edit, delete, and bulk import starter courses
+
+Learner Management: real-time list of registered users with search
+
+Feedback Management: filter, search, and update status
+
+🔄 Pull-to-Refresh & Live Data
+
+Home and Course Listing support pull-to-refresh
+
+Admin changes appear for learners after a single pull-to-refresh
+
+🌐 Live Deployment
+
+Web build deployed at: https://skillbytes-app.onrender.com/
+
+Contributions:
+
+Philip Gbafa: Connected Home to Firestore, pull-to-refresh on Home and Course Listing, finalized brand palette, wrote Week 4 README, recorded demo video
+
+Muhammad Huzaifa Sajjad: Firebase integration (Auth + Firestore), full admin dashboard, admin course/learner/feedback screens, AdminService
+
+Rajkumar A: Form UI refinements and validation polish
+
+Saanchi Agarwal: README review and documentation
+
+Shafiya Anam & Sharnice Obeng: Week 4 documentation
+
+Thembinkosi Bhebe: Final reviews, submission management, Excelerate upload
+
+13. Repository
 GitHub: https://github.com/RAJ322622/skillbytes_app
 
-## 15. Future Enhancements
+Live Web Demo: https://skillbytes-app.onrender.com/
 
-Potential future features include quizzes, certificates, offline lessons, reminder notifications, interactive electronics simulations, and community discussions.
+14. Future Enhancements
+Quizzes with scored results
 
-## 16. Conclusion
+Certificates on course completion
 
-SkillBytes aims to make practical technology learning easier to begin and maintain through short lessons, structured courses, and progress tracking. This repository provides the initial foundation for the team's collaborative development.
+Offline lesson caching
+
+Reminder notifications for streaks
+
+Interactive electronics simulations
+
+Community discussion threads
+
+Push notifications for new courses
+
+Multi-language support
+
+15. Conclusion
+SkillBytes makes practical technology learning easier to begin and maintain through short lessons, structured courses, and live progress tracking. Over four weeks, the team went from wireframes to a fully functional, Firebase-backed Flutter application with a polished brand identity, a learner-facing experience, and a complete admin control panel.
+
+The app demonstrates real full-stack behavior — a course added in the admin dashboard is visible to learners after a simple pull-to-refresh — and is deployed as a live web demo alongside the source code.
+
+Thank you to Excelerate and the SLU MAD program for the opportunity.
