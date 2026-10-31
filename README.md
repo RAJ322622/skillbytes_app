@@ -154,6 +154,7 @@ flutter pub get
 
 # 3. Run the app
 flutter run
+```
 Firebase Setup (already committed)
 android/app/google-services.json is included
 
